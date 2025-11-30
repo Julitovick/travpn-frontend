@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -7,6 +7,7 @@
     <title>TRAVPN - Ubicación virtual, Ahorro real</title>
     
     <!-- INICIO: CÓDIGO DE TRAVELPAYOUTS (MONETIZACIÓN) -->
+    <!-- Este script conecta tu web con la red de afiliados para generar ingresos -->
     <script data-noptimize="1" data-cfasync="false" data-wpfc-render="false">
       (function () {
           var script = document.createElement("script");
@@ -20,20 +21,7 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Importante: Esto conecta con tu código de React -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
-```
-
-### ¿Qué hace este script?
-Por la URL (`emrldtp.cc`), parece que es el script de **Emerald** (o Money Script) de Travelpayouts.
-* Este script es "inteligente". No muestra un banner fijo feo.
-* Lo que hace es analizar tu página y, dependiendo de lo que configures en tu panel de Travelpayouts, puede convertir automáticamente enlaces normales en enlaces de afiliado o mostrar widgets flotantes.
-
-### Último paso: Subir a producción
-Una vez pegado en `index.html`:
-
-```bash
-git add .
-git commit -m "Añadir script de monetización Travelpayouts"
-git push -u origin main
