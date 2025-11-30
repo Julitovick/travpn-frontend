@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Plane, ArrowRight, MapPin, Globe, Info, X, Check, Shield } from 'lucide-react';
-
+import './App.css'; // <-- Añade esta línea
+// ... resto de tu código ...
 // ----------------------------------------------------------------------------------
 // CONFIGURACIÓN DE LA API
 // ----------------------------------------------------------------------------------
