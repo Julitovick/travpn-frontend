@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Opcional: Estilos globales extra */
+body {
+  background-color: #f8fafc; /* Un gris muy suave de fondo */
+}
