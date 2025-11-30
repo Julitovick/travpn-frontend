@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Search, Plane, ArrowRight, MapPin, Globe, Info, X, Check, Shield } from 'lucide-react';
 
 // URL DEL BACKEND
-const API_URL = 'https://travpn-backend-x82z.onrender.com/api/search'; 
+const API_URL = 'https://travpn-backend.onrender.com/api/search'; 
 
 const App = () => {
   const [tripType, setTripType] = useState('roundtrip');
