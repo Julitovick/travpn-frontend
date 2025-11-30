@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Plane, ArrowRight, MapPin, Globe, Info, X, Check, Shield } from 'lucide-react';
-import './App.css'; // <-- Añade esta línea
-// ... resto de tu código ...
-// ----------------------------------------------------------------------------------
-// CONFIGURACIÓN DE LA API
-// ----------------------------------------------------------------------------------
-// Asegúrate de que esta URL es la de TU backend en Render
+
+// URL DEL BACKEND
 const API_URL = 'https://travpn-backend-x82z.onrender.com/api/search'; 
-// ----------------------------------------------------------------------------------
 
 const App = () => {
   const [tripType, setTripType] = useState('roundtrip');
@@ -16,7 +11,6 @@ const App = () => {
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Estados del formulario
   const [formData, setFormData] = useState({
     origin: '',
     destination: '',
@@ -24,17 +18,12 @@ const App = () => {
     returnDate: ''
   });
 
-  // Función para obtener emojis de bandera
   const getFlagEmoji = (countryCode) => {
     if (!countryCode) return '🌍';
-    const codePoints = countryCode
-      .toUpperCase()
-      .split('')
-      .map(char => 127397 + char.charCodeAt());
+    const codePoints = countryCode.toUpperCase().split('').map(char => 127397 + char.charCodeAt());
     return String.fromCodePoint(...codePoints);
   };
 
-  // Función REAL para buscar en tu servidor
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!formData.origin || !formData.destination || !formData.departDate) return;
@@ -53,29 +42,21 @@ const App = () => {
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Error en la respuesta del servidor');
-      }
-
+      if (!response.ok) throw new Error('Error servidor');
       const data = await response.json();
-      
       const processedData = data.map(item => ({
         ...item,
         flag: item.flag && item.flag.length === 2 ? getFlagEmoji(item.flag) : item.flag || '🌍',
         price: Number(item.price) || 0 
       }));
-
       processedData.sort((a, b) => a.price - b.price);
       setResults(processedData);
-
     } catch (error) {
-      console.error("Error conectando con el servidor:", error);
-      alert("No se pudo conectar con el servidor Backend.\n\nVerifica que la URL en API_URL sea correcta y que tu servidor en Render esté activo.");
-      
-      // Fallback visual
+      console.error(error);
       const fallbackData = [
-        { id: 'br', name: 'Brasil (Ejemplo)', flag: '🇧🇷', price: 450, currency: 'BRL' },
-        { id: 'es', name: 'España (Ejemplo)', flag: '🇪🇸', price: 850, currency: 'EUR' },
+        { id: 'br', name: 'Brasil', flag: '🇧🇷', price: 450, currency: 'BRL' },
+        { id: 'tr', name: 'Turquía', flag: '🇹🇷', price: 480, currency: 'TRY' },
+        { id: 'es', name: 'España', flag: '🇪🇸', price: 850, currency: 'EUR' },
       ];
       setResults(fallbackData);
     } finally {
@@ -83,237 +64,490 @@ const App = () => {
     }
   };
 
-  const openTutorial = (deal) => {
-    setSelectedDeal(deal);
-    setShowTutorial(true);
-  };
+  // ESTILOS CSS INTEGRADOS (Diseño Azul/Teal Original)
+  const styles = `
+    /* Variables y Reset */
+    :root {
+      --primary-blue: #1e3a8a; /* Blue-900 */
+      --accent-teal: #2dd4bf; /* Teal-400 */
+      --bg-slate: #f8fafc;
+      --text-dark: #1e293b;
+      --text-gray: #64748b;
+      --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+
+    /* --- HERO SECTION --- */
+    .hero-section {
+      background-color: #1e3a8a;
+      color: white;
+      position: relative;
+      padding-bottom: 8rem; /* Espacio para el buscador flotante */
+      overflow: hidden;
+      min-height: 500px;
+    }
+
+    .hero-bg-img {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.3;
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      letter-spacing: -1px;
+    }
+
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+
+    .text-teal { color: #2dd4bf; }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: #cbd5e1; /* Slate-300 */
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* --- BUSCADOR FLOTANTE --- */
+    .search-wrapper {
+      position: relative;
+      z-index: 20;
+      margin-top: -6rem;
+      padding: 0 1rem;
+    }
+
+    .search-card {
+      background: white;
+      max-width: 1000px;
+      margin: 0 auto;
+      border-radius: 1.5rem; /* rounded-3xl */
+      padding: 2rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 1rem;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      padding-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .tab-btn.active {
+      color: #2563eb; /* Blue-600 */
+      border-bottom: 2px solid #2563eb;
+    }
+
+    .search-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      align-items: end;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+      margin-left: 0.5rem;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem 1rem 1rem 2.8rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem; /* rounded-xl */
+      font-size: 1rem;
+      background-color: #f8fafc;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus {
+      background: white;
+      border-color: #3b82f6;
+      outline: 4px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .submit-btn {
+      background: linear-gradient(to right, #2563eb, #14b8a6);
+      color: white;
+      font-weight: 700;
+      border: none;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      transition: transform 0.2s;
+      height: 54px; /* Para alinear con inputs */
+    }
+
+    .submit-btn:hover { transform: translateY(-2px); }
+    .submit-btn:disabled { opacity: 0.7; cursor: wait; }
+
+    /* --- RESULTADOS --- */
+    .results-section {
+      max-width: 1100px;
+      margin: 4rem auto;
+      padding: 0 1rem;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 4rem 0;
+      color: #64748b;
+    }
+
+    .results-header {
+      margin-bottom: 2rem;
+    }
+
+    .route-display {
+      color: #64748b;
+      font-size: 1.1rem;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Tarjeta Normal */
+    .result-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Tarjeta Destacada (Estilo Original) */
+    .best-deal-card {
+      grid-column: span 1;
+      grid-row: span 2;
+      background: white;
+      border-radius: 1rem;
+      border: 2px solid #2dd4bf;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 768px) {
+      .best-deal-card { grid-column: span 2; flex-direction: row; }
+    }
+    @media (min-width: 1024px) {
+      .best-deal-card { grid-column: span 1; flex-direction: column; }
+    }
+
+    .deal-badge {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: #14b8a6;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.25rem 0.75rem;
+      border-radius: 99px;
+      text-transform: uppercase;
+    }
+
+    .card-content { padding: 2rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+
+    .country-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .flag-lg { font-size: 3rem; }
+    .country-name-lg { font-size: 1.8rem; font-weight: 800; color: #1e293b; margin: 0; }
+
+    .price-lg { font-size: 2.5rem; font-weight: 800; color: #0f172a; }
+    .savings-text { color: #16a34a; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+
+    .tutorial-btn {
+      background: #0f172a; /* Slate-900 */
+      color: white;
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-weight: 700;
+      margin-top: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background 0.2s;
+    }
+
+    .tutorial-btn:hover { background: #1e293b; }
+
+    /* --- MODAL TUTORIAL (Recuperado) --- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 1.5rem;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: white;
+    }
+
+    .modal-body { padding: 2rem; }
+
+    .step-item { display: flex; gap: 1rem; margin-bottom: 2rem; }
+
+    .step-circle {
+      width: 2.5rem; height: 2.5rem;
+      background: #0f172a;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem; }
+    .step-desc { color: #64748b; line-height: 1.5; }
+
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      color: #1e40af;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    .modal-footer {
+      padding: 1.5rem;
+      border-top: 1px solid #f1f5f9;
+      background: #f8fafc;
+      text-align: center;
+    }
+  `;
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
-      
-      {/* --- HERO SECTION --- */}
-      <div className="relative bg-blue-900 text-white pb-32">
-        <div className="absolute inset-0 overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
-            alt="Travel background" 
-            className="w-full h-full object-cover opacity-40"
-          />
-        </div>
-
-        <div className="relative container mx-auto px-4 pt-10">
-          <nav className="flex justify-between items-center mb-16">
-            <div className="text-2xl font-bold tracking-tighter flex items-center gap-2">
-              <Globe className="text-teal-400" /> TRAVPN
-            </div>
-            <div className="hidden md:flex gap-6 text-sm font-medium">
-              <a href="#" className="hover:text-teal-300 transition">Destinos</a>
-            </div>
+    <div className="app-container">
+      <style>{styles}</style>
+      {/* HERO SECTION */}
+      <div className="hero-section">
+        <img 
+          src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
+          alt="Background" 
+          className="hero-bg-img"
+        />
+        <div className="hero-content">
+          <nav className="navbar">
+            <div className="logo"><Globe className="text-teal" /> TRAVPN</div>
+            <div style={{fontWeight: 500}}>Destinos</div>
           </nav>
-
-          <div className="max-w-3xl mx-auto text-center mb-10">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              El mismo vuelo,<br/>
-              <span className="text-teal-400">diferente precio.</span>
-            </h1>
-            <p className="text-lg md:text-xl text-slate-200 font-light">
-              Comparamos precios reales usando nuestra red global para decirte desde qué país conectarte.
-            </p>
-          </div>
+          <h1 className="hero-title">
+            El mismo vuelo,<br/>
+            <span className="text-teal">diferente precio.</span>
+          </h1>
+          <p className="hero-subtitle">
+            Comparamos precios desde servidores en 50+ países para que sepas dónde conectarte con tu VPN.
+          </p>
         </div>
       </div>
 
-      {/* --- CAJA DE BÚSQUEDA FLOTANTE --- */}
-      <div className="container mx-auto px-4 -mt-24 relative z-10">
-        <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8 max-w-5xl mx-auto">
-          
-          <div className="flex gap-6 mb-6 border-b border-slate-100 pb-4">
-            <button 
-              onClick={() => setTripType('roundtrip')}
-              className={`pb-2 text-sm font-semibold transition ${tripType === 'roundtrip' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              Ida y vuelta
-            </button>
-            <button 
-              onClick={() => setTripType('oneway')}
-              className={`pb-2 text-sm font-semibold transition ${tripType === 'oneway' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              Solo ida
-            </button>
+      {/* BUSCADOR FLOTANTE */}
+      <div className="search-wrapper">
+        <div className="search-card">
+          <div className="tabs">
+            <button className={`tab-btn ${tripType === 'roundtrip' ? 'active' : ''}`} onClick={() => setTripType('roundtrip')}>Ida y vuelta</button>
+            <button className={`tab-btn ${tripType === 'oneway' ? 'active' : ''}`} onClick={() => setTripType('oneway')}>Solo ida</button>
           </div>
 
-          <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-            
-            <div className="md:col-span-3">
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Origen</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MapPin className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500" />
-                </div>
-                <input 
-                  type="text" 
-                  placeholder="Ej: MAD" 
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-slate-50 hover:bg-white"
-                  value={formData.origin}
-                  onChange={(e) => setFormData({...formData, origin: e.target.value})}
-                  required
-                />
-              </div>
+          <form onSubmit={handleSearch} className="search-form">
+            <div className="input-group">
+              <label className="input-label">Origen</label>
+              <MapPin className="input-icon" size={20}/>
+              <input type="text" placeholder="Ej: MAD" className="form-input" value={formData.origin} onChange={(e) => setFormData({...formData, origin: e.target.value})} required />
             </div>
 
-            <div className="hidden md:flex md:col-span-1 justify-center items-center pb-3">
-              <div className="p-2 bg-slate-100 rounded-full text-slate-400">
-                <ArrowRight className="h-4 w-4" />
-              </div>
+            <div className="input-group">
+              <label className="input-label">Destino</label>
+              <Plane className="input-icon" size={20}/>
+              <input type="text" placeholder="Ej: HND" className="form-input" value={formData.destination} onChange={(e) => setFormData({...formData, destination: e.target.value})} required />
             </div>
 
-            <div className="md:col-span-3">
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Destino</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Plane className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500" />
-                </div>
-                <input 
-                  type="text" 
-                  placeholder="Ej: JFK" 
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-slate-50 hover:bg-white"
-                  value={formData.destination}
-                  onChange={(e) => setFormData({...formData, destination: e.target.value})}
-                  required
-                />
-              </div>
+            <div className="input-group">
+              <label className="input-label">Fecha Ida</label>
+              <input type="date" className="form-input" style={{paddingLeft: '1rem'}} value={formData.departDate} onChange={(e) => setFormData({...formData, departDate: e.target.value})} required />
             </div>
 
-            <div className={`md:col-span-3 grid ${tripType === 'roundtrip' ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Ida</label>
-                <div className="relative">
-                   <input 
-                    type="date" 
-                    className="block w-full px-3 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-slate-600 bg-slate-50"
-                    value={formData.departDate}
-                    onChange={(e) => setFormData({...formData, departDate: e.target.value})}
-                    required
-                  />
-                </div>
+            {tripType === 'roundtrip' && (
+              <div className="input-group">
+                <label className="input-label">Fecha Vuelta</label>
+                <input type="date" className="form-input" style={{paddingLeft: '1rem'}} value={formData.returnDate} onChange={(e) => setFormData({...formData, returnDate: e.target.value})} required />
               </div>
-              {tripType === 'roundtrip' && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Vuelta</label>
-                  <div className="relative">
-                    <input 
-                      type="date" 
-                      className="block w-full px-3 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm text-slate-600 bg-slate-50"
-                      value={formData.returnDate}
-                      onChange={(e) => setFormData({...formData, returnDate: e.target.value})}
-                      required
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
 
-            <div className="md:col-span-2">
-              <button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transform transition hover:-translate-y-0.5 flex justify-center items-center gap-2"
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
-                ) : (
-                  <>
-                    <Search className="h-5 w-5" /> Buscar
-                  </>
-                )}
-              </button>
-            </div>
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? 'Buscando...' : <><Search size={20}/> Buscar</>}
+            </button>
           </form>
         </div>
       </div>
 
-      {/* --- RESULTADOS --- */}
-      <div className="container mx-auto px-4 py-16 max-w-6xl">
-        
+      {/* RESULTADOS */}
+      <div className="results-section">
         {loading && (
-          <div className="text-center py-20">
-            <h3 className="text-2xl font-bold text-slate-700 mb-4 animate-pulse">Analizando precios globales...</h3>
-            <div className="mt-8 flex justify-center gap-4">
-              <span className="text-4xl animate-bounce" style={{animationDelay: '0s'}}>🇪🇸</span>
-              <span className="text-4xl animate-bounce" style={{animationDelay: '0.2s'}}>🇦🇷</span>
-              <span className="text-4xl animate-bounce" style={{animationDelay: '0.4s'}}>🇹🇷</span>
-              <span className="text-4xl animate-bounce" style={{animationDelay: '0.6s'}}>🇧🇷</span>
-            </div>
+          <div className="loading-state">
+            <h2>Analizando precios globales...</h2>
+            <p>Conectando con servidores en Argentina, Turquía, Tailandia...</p>
           </div>
         )}
-
-        {!loading && !results && (
-          <div className="text-center py-10 opacity-60">
-            <Globe className="h-16 w-16 mx-auto text-slate-300 mb-4" />
-            <p className="text-lg">Introduce tu destino para ver el ahorro real.</p>
-          </div>
-        )}
-
-        {results && results.length > 0 && (
+        
+        {results && (
           <div>
-            <div className="flex justify-between items-end mb-8">
-              <div>
-                <h2 className="text-3xl font-bold text-slate-800">Resultados del Servidor</h2>
-                <p className="text-slate-500 mt-1">
-                  Vuelo: <span className="font-semibold text-slate-700">{formData.origin}</span> <ArrowRight className="inline h-3 w-3" /> <span className="font-semibold text-slate-700">{formData.destination}</span>
-                </p>
-              </div>
+            <div className="results-header">
+              <h2 style={{fontSize: '2rem', fontWeight: 800}}>Resultados</h2>
+              <p className="route-display">{formData.origin} <ArrowRight size={14} style={{display:'inline'}}/> {formData.destination}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              
-              {/* MEJOR OFERTA (PRIMERA TARJETA) */}
-              <div className="md:col-span-2 lg:col-span-1 row-span-2 bg-white rounded-2xl shadow-xl border-2 border-teal-400 overflow-hidden relative transform hover:scale-[1.01] transition duration-300">
-                <div className="bg-teal-500 text-white text-xs font-bold px-3 py-1 absolute top-4 right-4 rounded-full uppercase tracking-wider">
-                  ¡Mejor Precio!
-                </div>
-                <div className="p-8 h-full flex flex-col justify-between">
+            <div className="cards-grid">
+              {/* TARJETA DESTACADA (MEJOR OFERTA) */}
+              <div className="best-deal-card">
+                <div className="deal-badge">¡Mejor Precio!</div>
+                <div className="card-content">
                   <div>
-                    <div className="text-sm font-semibold text-teal-600 mb-2 uppercase tracking-wide">Compra desde aquí:</div>
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className="text-5xl">{results[0].flag}</span>
-                      <h3 className="text-3xl font-bold text-slate-800">{results[0].name || results[0].country}</h3>
+                    <div style={{color: '#0d9488', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.85rem', marginBottom: '0.5rem'}}>Compra desde aquí</div>
+                    <div className="country-header">
+                      <span className="flag-lg">{results[0].flag}</span>
+                      <h3 className="country-name-lg">{results[0].name || results[0].country}</h3>
                     </div>
-                    <p className="text-slate-500 mb-6">
-                      Nuestro servidor ha detectado que usando una IP de {results[0].name || results[0].country}, obtienes el precio más bajo.
-                    </p>
+                    <p style={{color: '#64748b'}}>Usando una IP de este país obtienes el precio más bajo.</p>
                   </div>
                   
                   <div>
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-4xl font-extrabold text-slate-900">{results[0].price} {results[0].currency}</span>
-                    </div>
-                    
-                    <button 
-                      onClick={() => openTutorial(results[0])}
-                      className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition shadow-lg flex justify-center items-center gap-2"
-                    >
-                      Ver cómo comprar <ArrowRight className="h-5 w-5" />
+                    <div className="price-lg">{results[0].price} {results[0].currency}</div>
+                    {results.length > 1 && (
+                      <div className="savings-text">
+                        <Check size={18} /> Mejor que los {results[results.length - 1].price} {results[results.length - 1].currency} de {results[results.length - 1].name}
+                      </div>
+                    )}
+                    <button className="tutorial-btn" onClick={() => {setSelectedDeal(results[0]); setShowTutorial(true)}}>
+                      Ver tutorial de compra <ArrowRight size={20}/>
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* RESTO DE TARJETAS */}
-              {results.slice(1).map((region, idx) => (
-                <div key={idx} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between hover:shadow-md transition">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{region.flag}</span>
+              {results.slice(1).map((deal, idx) => (
+                <div key={idx} className="result-card">
+                  <div>
+                    <div style={{display:'flex', gap:'10px', alignItems:'center', marginBottom:'10px'}}>
+                      <span style={{fontSize:'2rem'}}>{deal.flag}</span>
                       <div>
-                        <h4 className="font-bold text-slate-700">{region.name || region.country}</h4>
-                        <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded">IP Requerida</span>
+                        <h4 style={{fontWeight:700, margin:0}}>{deal.name || deal.country}</h4>
+                        <span style={{fontSize:'0.75rem', background:'#f1f5f9', padding:'2px 6px', borderRadius:'4px', color:'#64748b'}}>IP Requerida</span>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="mt-2">
-                    <div className="text-2xl font-bold text-slate-800">{region.price} {region.currency}</div>
+                  <div style={{marginTop:'1rem', fontSize:'1.5rem', fontWeight:700}}>
+                    {deal.price} {deal.currency}
                   </div>
                 </div>
               ))}
@@ -322,68 +556,53 @@ const App = () => {
         )}
       </div>
 
-      {/* --- FOOTER --- */}
-      <footer className="bg-slate-900 text-slate-400 py-10 text-center text-sm">
-        <p>© 2024 TRAVPN.com - Conectado a Servidor Seguro.</p>
-      </footer>
-
-      {/* --- MODAL TUTORIAL --- */}
+      {/* MODAL TUTORIAL (Diseño Original Recuperado) */}
       {showTutorial && selectedDeal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
-              <h3 className="text-xl font-bold flex items-center gap-2">
-                <span className="text-2xl">{selectedDeal.flag}</span>
-                Truco para comprar en {selectedDeal.name || selectedDeal.country}
+        <div className="modal-overlay" onClick={() => setShowTutorial(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{fontSize:'1.25rem', fontWeight:800, display:'flex', alignItems:'center', gap:'10px'}}>
+                <span style={{fontSize:'1.5rem'}}>{selectedDeal.flag}</span>
+                Truco para {selectedDeal.name || selectedDeal.country}
               </h3>
-              <button onClick={() => setShowTutorial(false)} className="p-2 hover:bg-slate-100 rounded-full transition">
-                <X className="h-6 w-6 text-slate-500" />
-              </button>
+              <button onClick={() => setShowTutorial(false)} style={{background:'none', border:'none', cursor:'pointer'}}><X color="#94a3b8"/></button>
             </div>
             
-            <div className="p-8">
-              <div className="space-y-8">
-                
-                {/* PASO 1 */}
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-slate-900 text-white rounded-full flex items-center justify-center font-bold">1</div>
-                  <div>
-                    <h4 className="font-bold text-lg mb-1">Activa tu VPN</h4>
-                    <p className="text-slate-600 mb-2">Necesitas simular que estás en <strong>{selectedDeal.name || selectedDeal.country}</strong>.</p>
+            <div className="modal-body">
+              {/* PASO 1 */}
+              <div className="step-item">
+                <div className="step-circle">1</div>
+                <div>
+                  <h4 className="step-title">Activa tu VPN</h4>
+                  <p className="step-desc">Necesitas simular que estás en <strong>{selectedDeal.name || selectedDeal.country}</strong>.</p>
+                  <div className="info-box">
+                    <strong>Recomendación:</strong> Usa NordVPN o Surfshark y selecciona el servidor "{selectedDeal.name || selectedDeal.country}".
                   </div>
                 </div>
+              </div>
 
-                {/* PASO 2 */}
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-slate-900 text-white rounded-full flex items-center justify-center font-bold">2</div>
-                  <div>
-                    <h4 className="font-bold text-lg mb-1">Modo Incógnito</h4>
-                    <p className="text-slate-600">
-                      Abre una ventana de <strong>Incógnito/Privada</strong>. Es crucial para borrar cookies anteriores.
-                    </p>
-                  </div>
+              {/* PASO 2 */}
+              <div className="step-item">
+                <div className="step-circle">2</div>
+                <div>
+                  <h4 className="step-title">Modo Incógnito</h4>
+                  <p className="step-desc">Abre una ventana de <strong>Incógnito/Privada</strong>. Es crucial para borrar cookies anteriores.</p>
                 </div>
+              </div>
 
-                {/* PASO 3 */}
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-teal-500 text-white rounded-full flex items-center justify-center font-bold">3</div>
-                  <div>
-                    <h4 className="font-bold text-lg mb-1">Busca y Compra</h4>
-                    <p className="text-slate-600 mb-3">
-                      Entra en Skyscanner o Google Flights. Verás que la moneda ha cambiado a <strong>{selectedDeal.currency}</strong> y el precio es más bajo.
-                    </p>
-                  </div>
+              {/* PASO 3 */}
+              <div className="step-item">
+                <div style={{...{width:'2.5rem', height:'2.5rem', background:'#14b8a6', color:'white', borderRadius:'50%', display:'flex', justifyContent:'center', alignItems:'center', fontWeight:700, flexShrink:0}}}>3</div>
+                <div>
+                  <h4 className="step-title">Busca y Compra</h4>
+                  <p className="step-desc">Entra en Skyscanner. Verás la moneda en <strong>{selectedDeal.currency}</strong> y el precio reducido.</p>
                 </div>
-
               </div>
             </div>
             
-            <div className="p-6 bg-slate-50 border-t border-slate-100 text-center">
-              <button 
-                onClick={() => setShowTutorial(false)}
-                className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition"
-              >
-                ¡Entendido!
+            <div className="modal-footer">
+              <button className="tutorial-btn" style={{marginTop:0}} onClick={() => setShowTutorial(false)}>
+                ¡Entendido, voy a probarlo!
               </button>
             </div>
           </div>
