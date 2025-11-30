@@ -1,8 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Borra todo lo anterior y pega esto */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-/* Opcional: Estilos globales extra */
+/* Añadimos un estilo base para asegurarnos de que carga algo */
 body {
-  background-color: #f8fafc; /* Un gris muy suave de fondo */
+  background-color: #0f172a; /* Azul oscuro por si falla lo demás */
+  color: white;
 }
