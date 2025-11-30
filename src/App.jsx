@@ -1,22 +1,67 @@
-import React, { useState } from 'react';
-import { Search, Plane, ArrowRight, MapPin, Globe, Info, X, Check, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Plane, MapPin, Globe, Info, X, Hotel, Ship, Shield, CheckCircle, ExternalLink, AlertTriangle, EyeOff, CreditCard, ChevronRight, Lock } from 'lucide-react';
 
-// URL DEL BACKEND
-const API_URL = 'https://travpn-backend.onrender.com/api/search'; 
+// URL DE TU BACKEND
+const API_URL_BASE = 'https://travpn-backend-x82z.onrender.com/api'; 
+
+const EXCHANGE_RATES = {
+  'EUR': 1.0, 'USD': 0.92, 'BRL': 0.18, 'ARS': 0.0011,
+  'INR': 0.011, 'TRY': 0.029, 'JPY': 0.0062, 'MXN': 0.054
+};
+
+// --- LISTA DE IMÁGENES DE FONDO ---
+const BACKGROUND_IMAGES = [
+  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop', // Montañas Suiza
+  'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073&auto=format&fit=crop', // París
+  'https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2038&auto=format&fit=crop', // Bali
+  'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2070&auto=format&fit=crop', // Maldivas
+  'https://images.unsplash.com/photo-1528164344705-47542687000d?q=80&w=2092&auto=format&fit=crop', // Japón
+  'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?q=80&w=2066&auto=format&fit=crop', // Cinque Terre Italia
+  'https://images.unsplash.com/photo-1512453979798-5ea904ac6666?q=80&w=2070&auto=format&fit=crop', // Dubai
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop', // Playa Tailandia
+  'https://images.unsplash.com/photo-15422596594c2-9ee65977f36e?q=80&w=2070&auto=format&fit=crop', // Bosque Tropical
+  'https://images.unsplash.com/photo-1499856871940-a09627c6dcf6?q=80&w=2020&auto=format&fit=crop', // Nueva York
+];
 
 const App = () => {
-  const [tripType, setTripType] = useState('roundtrip');
+  const [activeTab, setActiveTab] = useState('flights');
+  const [userCurrency, setUserCurrency] = useState('EUR');
+  
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [bgImage, setBgImage] = useState('');
 
   const [formData, setFormData] = useState({
-    origin: '',
-    destination: '',
-    departDate: '',
-    returnDate: ''
+    origin: '', destination: '', date: '', returnDate: ''
   });
+
+  // Elegir imagen al azar al cargar
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * BACKGROUND_IMAGES.length);
+    setBgImage(BACKGROUND_IMAGES[randomIndex]);
+  }, []);
+
+  const getDealLink = () => {
+    if (activeTab === 'flights') {
+        const dateFormatted = formData.date.slice(2).replace(/-/g, ''); 
+        return `https://www.skyscanner.es/transport/flights/${formData.origin}/${formData.destination}/${dateFormatted}`;
+    } else if (activeTab === 'hotels') {
+        return `https://www.booking.com/searchresults.html?ss=${formData.destination}`;
+    } else {
+        return `https://www.cruisecritic.com/search?q=${formData.destination}`;
+    }
+  };
+
+  const convertPrice = (price, fromCurrency) => {
+    if (fromCurrency === userCurrency) return null;
+    const rateToEur = EXCHANGE_RATES[fromCurrency] || 1;
+    const priceInEur = price * rateToEur;
+    const rateFromEur = 1 / (EXCHANGE_RATES[userCurrency] || 1);
+    const finalPrice = priceInEur * rateFromEur;
+    return Math.round(finalPrice).toLocaleString();
+  };
 
   const getFlagEmoji = (countryCode) => {
     if (!countryCode) return '🌍';
@@ -26,588 +71,367 @@ const App = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!formData.origin || !formData.destination || !formData.departDate) return;
+    if (!formData.destination) return alert("Por favor indica un destino");
 
     setLoading(true);
     setResults(null);
 
+    let endpoint = '/search';
+    if (activeTab === 'hotels') endpoint = '/hotels';
+    if (activeTab === 'cruises') endpoint = '/cruises';
+
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL_BASE}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          origin: formData.origin,       
-          destination: formData.destination, 
-          date: formData.departDate      
-        })
+        body: JSON.stringify(formData)
       });
 
       if (!response.ok) throw new Error('Error servidor');
       const data = await response.json();
-      const processedData = data.map(item => ({
+      
+      const processed = data.map(item => ({
         ...item,
-        flag: item.flag && item.flag.length === 2 ? getFlagEmoji(item.flag) : item.flag || '🌍',
-        price: Number(item.price) || 0 
+        flag: item.flag?.length === 2 ? getFlagEmoji(item.flag) : '🌍',
+        price: Number(item.price) || 0
       }));
-      processedData.sort((a, b) => a.price - b.price);
-      setResults(processedData);
+
+      processed.sort((a, b) => {
+        const priceA = a.price * (EXCHANGE_RATES[a.currency] || 1);
+        const priceB = b.price * (EXCHANGE_RATES[b.currency] || 1);
+        return priceA - priceB;
+      });
+
+      setResults(processed);
+
     } catch (error) {
       console.error(error);
-      const fallbackData = [
-        { id: 'br', name: 'Brasil', flag: '🇧🇷', price: 450, currency: 'BRL' },
-        { id: 'tr', name: 'Turquía', flag: '🇹🇷', price: 480, currency: 'TRY' },
-        { id: 'es', name: 'España', flag: '🇪🇸', price: 850, currency: 'EUR' },
-      ];
-      setResults(fallbackData);
+      setResults([
+        { country: 'Brasil', flag: '🇧🇷', price: 1500, currency: 'BRL', airline: 'Latam', hotelName: 'Rio Palace', cruiseLine: 'MSC Brazil' },
+        { country: 'Turquía', flag: '🇹🇷', price: 8500, currency: 'TRY', airline: 'Turkish Airlines', hotelName: 'Grand Istanbul', cruiseLine: 'Bosphorus Lines' },
+        { country: 'España', flag: '🇪🇸', price: 450, currency: 'EUR', airline: 'Iberia', hotelName: 'Madrid Central', cruiseLine: 'Costa Cruceros' },
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
-  // ESTILOS CSS INTEGRADOS (Diseño Azul/Teal Original)
-  const styles = `
-    /* Variables y Reset */
-    :root {
-      --primary-blue: #1e3a8a; /* Blue-900 */
-      --accent-teal: #2dd4bf; /* Teal-400 */
-      --bg-slate: #f8fafc;
-      --text-dark: #1e293b;
-      --text-gray: #64748b;
-      --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #f8fafc;
-      color: #1e293b;
-    }
-
-    /* --- HERO SECTION --- */
-    .hero-section {
-      background-color: #1e3a8a;
-      color: white;
-      position: relative;
-      padding-bottom: 8rem; /* Espacio para el buscador flotante */
-      overflow: hidden;
-      min-height: 500px;
-    }
-
-    .hero-bg-img {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      object-fit: cover;
-      opacity: 0.3;
-      z-index: 1;
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 10;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-      text-align: center;
-    }
-
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4rem;
-    }
-
-    .logo {
-      font-size: 1.5rem;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      letter-spacing: -1px;
-    }
-
-    .hero-title {
-      font-size: 3.5rem;
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 1.5rem;
-    }
-
-    .text-teal { color: #2dd4bf; }
-
-    .hero-subtitle {
-      font-size: 1.25rem;
-      color: #cbd5e1; /* Slate-300 */
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    /* --- BUSCADOR FLOTANTE --- */
-    .search-wrapper {
-      position: relative;
-      z-index: 20;
-      margin-top: -6rem;
-      padding: 0 1rem;
-    }
-
-    .search-card {
-      background: white;
-      max-width: 1000px;
-      margin: 0 auto;
-      border-radius: 1.5rem; /* rounded-3xl */
-      padding: 2rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    }
-
-    .tabs {
-      display: flex;
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 1rem;
-    }
-
-    .tab-btn {
-      background: none;
-      border: none;
-      font-weight: 600;
-      color: #64748b;
-      cursor: pointer;
-      padding-bottom: 0.5rem;
-      font-size: 0.95rem;
-    }
-
-    .tab-btn.active {
-      color: #2563eb; /* Blue-600 */
-      border-bottom: 2px solid #2563eb;
-    }
-
-    .search-form {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      align-items: end;
-    }
-
-    .input-label {
-      display: block;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #64748b;
-      margin-bottom: 0.5rem;
-      margin-left: 0.5rem;
-    }
-
-    .input-group {
-      position: relative;
-    }
-
-    .input-icon {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94a3b8;
-    }
-
-    .form-input {
-      width: 100%;
-      padding: 1rem 1rem 1rem 2.8rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.75rem; /* rounded-xl */
-      font-size: 1rem;
-      background-color: #f8fafc;
-      transition: all 0.2s;
-    }
-
-    .form-input:focus {
-      background: white;
-      border-color: #3b82f6;
-      outline: 4px solid rgba(59, 130, 246, 0.1);
-    }
-
-    .submit-btn {
-      background: linear-gradient(to right, #2563eb, #14b8a6);
-      color: white;
-      font-weight: 700;
-      border: none;
-      padding: 1rem;
-      border-radius: 0.75rem;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-      transition: transform 0.2s;
-      height: 54px; /* Para alinear con inputs */
-    }
-
-    .submit-btn:hover { transform: translateY(-2px); }
-    .submit-btn:disabled { opacity: 0.7; cursor: wait; }
-
-    /* --- RESULTADOS --- */
-    .results-section {
-      max-width: 1100px;
-      margin: 4rem auto;
-      padding: 0 1rem;
-    }
-
-    .loading-state {
-      text-align: center;
-      padding: 4rem 0;
-      color: #64748b;
-    }
-
-    .results-header {
-      margin-bottom: 2rem;
-    }
-
-    .route-display {
-      color: #64748b;
-      font-size: 1.1rem;
-    }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-
-    /* Tarjeta Normal */
-    .result-card {
-      background: white;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      border: 1px solid #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    }
-
-    /* Tarjeta Destacada (Estilo Original) */
-    .best-deal-card {
-      grid-column: span 1;
-      grid-row: span 2;
-      background: white;
-      border-radius: 1rem;
-      border: 2px solid #2dd4bf;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-    }
-
-    @media (min-width: 768px) {
-      .best-deal-card { grid-column: span 2; flex-direction: row; }
-    }
-    @media (min-width: 1024px) {
-      .best-deal-card { grid-column: span 1; flex-direction: column; }
-    }
-
-    .deal-badge {
-      position: absolute;
-      top: 1rem; right: 1rem;
-      background: #14b8a6;
-      color: white;
-      font-size: 0.75rem;
-      font-weight: 800;
-      padding: 0.25rem 0.75rem;
-      border-radius: 99px;
-      text-transform: uppercase;
-    }
-
-    .card-content { padding: 2rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-
-    .country-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-    .flag-lg { font-size: 3rem; }
-    .country-name-lg { font-size: 1.8rem; font-weight: 800; color: #1e293b; margin: 0; }
-
-    .price-lg { font-size: 2.5rem; font-weight: 800; color: #0f172a; }
-    .savings-text { color: #16a34a; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
-
-    .tutorial-btn {
-      background: #0f172a; /* Slate-900 */
-      color: white;
-      width: 100%;
-      padding: 1rem;
-      border: none;
-      border-radius: 0.75rem;
-      font-weight: 700;
-      margin-top: 1.5rem;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-      transition: background 0.2s;
-    }
-
-    .tutorial-btn:hover { background: #1e293b; }
-
-    /* --- MODAL TUTORIAL (Recuperado) --- */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 50;
-      padding: 1rem;
-    }
-
-    .modal-content {
-      background: white;
-      border-radius: 1.5rem;
-      width: 100%;
-      max-width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-      animation: slideUp 0.3s ease-out;
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    .modal-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid #f1f5f9;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      background: white;
-    }
-
-    .modal-body { padding: 2rem; }
-
-    .step-item { display: flex; gap: 1rem; margin-bottom: 2rem; }
-
-    .step-circle {
-      width: 2.5rem; height: 2.5rem;
-      background: #0f172a;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .step-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem; }
-    .step-desc { color: #64748b; line-height: 1.5; }
-
-    .info-box {
-      background: #eff6ff;
-      border: 1px solid #dbeafe;
-      color: #1e40af;
-      padding: 1rem;
-      border-radius: 0.75rem;
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-    }
-
-    .modal-footer {
-      padding: 1.5rem;
-      border-top: 1px solid #f1f5f9;
-      background: #f8fafc;
-      text-align: center;
-    }
-  `;
-
   return (
-    <div className="app-container">
-      <style>{styles}</style>
-      {/* HERO SECTION */}
-      <div className="hero-section">
-        <img 
-          src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
-          alt="Background" 
-          className="hero-bg-img"
-        />
-        <div className="hero-content">
-          <nav className="navbar">
-            <div className="logo"><Globe className="text-teal" /> TRAVPN</div>
-            <div style={{fontWeight: 500}}>Destinos</div>
+    <div className="min-h-screen bg-white font-sans text-slate-800 flex flex-col">
+      
+      {/* --- HEADER --- */}
+      <div className="bg-blue-900 text-white pb-48 relative overflow-hidden transition-all duration-1000">
+        
+        {/* Selector de Moneda */}
+        <div className="absolute top-4 right-4 z-20 bg-black/30 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 border border-white/20 hover:bg-black/40 transition">
+            <span className="text-xs text-slate-200 uppercase font-semibold">Moneda:</span>
+            <select 
+                value={userCurrency} 
+                onChange={(e) => setUserCurrency(e.target.value)}
+                className="bg-transparent font-bold text-white outline-none cursor-pointer"
+            >
+                <option value="EUR" className="text-slate-900">EUR (€)</option>
+                <option value="USD" className="text-slate-900">USD ($)</option>
+                <option value="GBP" className="text-slate-900">GBP (£)</option>
+            </select>
+        </div>
+
+        {/* Imagen de Fondo Dinámica */}
+        {bgImage && (
+            <div 
+                className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out"
+                style={{ backgroundImage: `url('${bgImage}')` }}
+            />
+        )}
+        
+        {/* Overlay degradado para que se lea el texto */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/60 via-blue-900/40 to-blue-900/90" />
+
+        <div className="relative container mx-auto px-4 pt-10">
+          <nav className="flex items-center gap-2 mb-12">
+            <Globe className="text-teal-400 h-8 w-8 drop-shadow-md" /> 
+            <span className="text-2xl font-bold tracking-tighter drop-shadow-md">TRAVPN</span>
           </nav>
-          <h1 className="hero-title">
-            El mismo vuelo,<br/>
-            <span className="text-teal">diferente precio.</span>
-          </h1>
-          <p className="hero-subtitle">
-            Comparamos precios desde servidores en 50+ países para que sepas dónde conectarte con tu VPN.
-          </p>
+
+          <div className="text-center mb-10">
+            <span className="inline-block py-1 px-3 rounded-full bg-blue-600/30 backdrop-blur-sm border border-blue-400/50 text-blue-100 text-xs font-bold uppercase tracking-wider mb-4 shadow-lg">
+              Ahora buscando en 50+ países 🌍
+            </span>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
+              Ubicación virtual.<br /> 
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-blue-200">Ahorro real.</span>
+            </h1>
+            <p className="text-white/90 text-lg max-w-2xl mx-auto font-light drop-shadow-md">
+              Las aerolíneas cambian los precios según tu ubicación. Nosotros te decimos desde dónde conectarte para pagar menos.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* BUSCADOR FLOTANTE */}
-      <div className="search-wrapper">
-        <div className="search-card">
-          <div className="tabs">
-            <button className={`tab-btn ${tripType === 'roundtrip' ? 'active' : ''}`} onClick={() => setTripType('roundtrip')}>Ida y vuelta</button>
-            <button className={`tab-btn ${tripType === 'oneway' ? 'active' : ''}`} onClick={() => setTripType('oneway')}>Solo ida</button>
+      {/* --- BUSCADOR --- */}
+      <div className="container mx-auto px-4 -mt-32 relative z-10 mb-24">
+        <div className="bg-white rounded-[2rem] shadow-2xl overflow-hidden max-w-5xl mx-auto border border-slate-100">
+          
+          <div className="flex bg-slate-50 p-2 border-b border-slate-200 gap-1">
+            <button onClick={() => setActiveTab('flights')} className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold rounded-xl transition-all ${activeTab === 'flights' ? 'bg-white shadow text-blue-600 ring-1 ring-slate-200' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}><Plane className="h-5 w-5" /> Vuelos</button>
+            <button onClick={() => setActiveTab('hotels')} className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold rounded-xl transition-all ${activeTab === 'hotels' ? 'bg-white shadow text-blue-600 ring-1 ring-slate-200' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}><Hotel className="h-5 w-5" /> Hoteles</button>
+            <button onClick={() => setActiveTab('cruises')} className={`flex-1 py-4 flex items-center justify-center gap-2 font-bold rounded-xl transition-all ${activeTab === 'cruises' ? 'bg-white shadow text-blue-600 ring-1 ring-slate-200' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}><Ship className="h-5 w-5" /> Cruceros</button>
           </div>
 
-          <form onSubmit={handleSearch} className="search-form">
-            <div className="input-group">
-              <label className="input-label">Origen</label>
-              <MapPin className="input-icon" size={20}/>
-              <input type="text" placeholder="Ej: MAD" className="form-input" value={formData.origin} onChange={(e) => setFormData({...formData, origin: e.target.value})} required />
-            </div>
-
-            <div className="input-group">
-              <label className="input-label">Destino</label>
-              <Plane className="input-icon" size={20}/>
-              <input type="text" placeholder="Ej: HND" className="form-input" value={formData.destination} onChange={(e) => setFormData({...formData, destination: e.target.value})} required />
-            </div>
-
-            <div className="input-group">
-              <label className="input-label">Fecha Ida</label>
-              <input type="date" className="form-input" style={{paddingLeft: '1rem'}} value={formData.departDate} onChange={(e) => setFormData({...formData, departDate: e.target.value})} required />
-            </div>
-
-            {tripType === 'roundtrip' && (
-              <div className="input-group">
-                <label className="input-label">Fecha Vuelta</label>
-                <input type="date" className="form-input" style={{paddingLeft: '1rem'}} value={formData.returnDate} onChange={(e) => setFormData({...formData, returnDate: e.target.value})} required />
-              </div>
+          <form onSubmit={handleSearch} className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-white">
+            {activeTab === 'flights' && (
+                <div className="md:col-span-3">
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2 pl-1">Origen</label>
+                    <div className="relative">
+                        <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                        <input type="text" placeholder="Madrid (MAD)" className="w-full pl-10 p-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none font-medium" value={formData.origin} onChange={(e) => setFormData({...formData, origin: e.target.value})} />
+                    </div>
+                </div>
             )}
-
-            <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? 'Buscando...' : <><Search size={20}/> Buscar</>}
-            </button>
+            <div className={`${activeTab === 'flights' ? 'md:col-span-3' : 'md:col-span-6'}`}>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 pl-1">Destino</label>
+                <div className="relative">
+                    <Globe className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                    <input type="text" placeholder={activeTab === 'hotels' ? "París, Centro" : "Tokio (HND)"} className="w-full pl-10 p-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none font-medium" value={formData.destination} onChange={(e) => setFormData({...formData, destination: e.target.value})} />
+                </div>
+            </div>
+            <div className="md:col-span-3">
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2 pl-1">Fecha</label>
+                <input type="date" className="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-slate-600 font-medium" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
+            </div>
+            <div className="md:col-span-3">
+              <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition flex justify-center items-center gap-2 shadow-lg shadow-blue-200 active:scale-95">
+                {loading ? <span className="animate-spin">⌛</span> : <><Search className="h-5 w-5" /> Buscar Ahorro</>}
+              </button>
+            </div>
           </form>
         </div>
       </div>
 
-      {/* RESULTADOS */}
-      <div className="results-section">
-        {loading && (
-          <div className="loading-state">
-            <h2>Analizando precios globales...</h2>
-            <p>Conectando con servidores en Argentina, Turquía, Tailandia...</p>
-          </div>
-        )}
-        
-        {results && (
-          <div>
-            <div className="results-header">
-              <h2 style={{fontSize: '2rem', fontWeight: 800}}>Resultados</h2>
-              <p className="route-display">{formData.origin} <ArrowRight size={14} style={{display:'inline'}}/> {formData.destination}</p>
-            </div>
-
-            <div className="cards-grid">
-              {/* TARJETA DESTACADA (MEJOR OFERTA) */}
-              <div className="best-deal-card">
-                <div className="deal-badge">¡Mejor Precio!</div>
-                <div className="card-content">
-                  <div>
-                    <div style={{color: '#0d9488', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.85rem', marginBottom: '0.5rem'}}>Compra desde aquí</div>
-                    <div className="country-header">
-                      <span className="flag-lg">{results[0].flag}</span>
-                      <h3 className="country-name-lg">{results[0].name || results[0].country}</h3>
+      {/* --- RESULTADOS --- */}
+      {results ? (
+        <div className="container mx-auto px-4 py-8 max-w-6xl flex-grow animate-fade-in-up">
+            <h2 className="text-3xl font-bold mb-8 text-slate-800 flex items-center gap-3">
+                Precios encontrados en {results.length} países
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {results.map((item, idx) => {
+                const converted = convertPrice(item.price, item.currency);
+                return (
+                  <div key={idx} className={`bg-white rounded-2xl p-6 border transition hover:shadow-xl hover:-translate-y-1 duration-300 relative group flex flex-col ${idx === 0 ? 'border-teal-400 shadow-lg ring-1 ring-teal-50' : 'border-slate-100 shadow-sm'}`}>
+                    {idx === 0 && <div className="absolute -top-3 left-6 bg-teal-500 text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full shadow-md z-10">Mejor Precio Detectado</div>}
+                    
+                    <div className="flex justify-between items-start mb-4 mt-2">
+                        <div className="flex items-center gap-3">
+                            <span className="text-4xl shadow-sm rounded-full bg-slate-50 w-12 h-12 flex items-center justify-center">{item.flag}</span>
+                            <div>
+                                <h3 className="font-bold text-slate-800 text-lg leading-tight">{item.country}</h3>
+                                <div className="text-xs text-slate-400 font-medium flex items-center gap-1"><Lock className="w-3 h-3"/> IP Necesaria</div>
+                            </div>
+                        </div>
                     </div>
-                    <p style={{color: '#64748b'}}>Usando una IP de este país obtienes el precio más bajo.</p>
-                  </div>
-                  
-                  <div>
-                    <div className="price-lg">{results[0].price} {results[0].currency}</div>
-                    {results.length > 1 && (
-                      <div className="savings-text">
-                        <Check size={18} /> Mejor que los {results[results.length - 1].price} {results[results.length - 1].currency} de {results[results.length - 1].name}
-                      </div>
-                    )}
-                    <button className="tutorial-btn" onClick={() => {setSelectedDeal(results[0]); setShowTutorial(true)}}>
-                      Ver tutorial de compra <ArrowRight size={20}/>
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              {/* RESTO DE TARJETAS */}
-              {results.slice(1).map((deal, idx) => (
-                <div key={idx} className="result-card">
-                  <div>
-                    <div style={{display:'flex', gap:'10px', alignItems:'center', marginBottom:'10px'}}>
-                      <span style={{fontSize:'2rem'}}>{deal.flag}</span>
-                      <div>
-                        <h4 style={{fontWeight:700, margin:0}}>{deal.name || deal.country}</h4>
-                        <span style={{fontSize:'0.75rem', background:'#f1f5f9', padding:'2px 6px', borderRadius:'4px', color:'#64748b'}}>IP Requerida</span>
-                      </div>
+                    <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                        <div className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                            {item.price.toLocaleString()} <span className="text-sm text-slate-500 font-normal">{item.currency}</span>
+                        </div>
+                        {converted && (
+                            <div className="text-sm font-bold text-blue-600 mt-1 flex items-center justify-center gap-1 bg-blue-100/50 py-1 rounded">
+                                ≈ {converted} {userCurrency}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex-grow">
+                        <div className="flex items-center gap-2 text-sm text-slate-600 mb-4 border-t border-slate-50 pt-4">
+                            {activeTab === 'flights' && <><Plane className="h-4 w-4 text-blue-400 flex-shrink-0"/> <span className="truncate">{item.airline}</span></>}
+                            {activeTab === 'hotels' && <><Hotel className="h-4 w-4 text-blue-400 flex-shrink-0"/> <span className="truncate">{item.hotelName}</span></>}
+                            {activeTab === 'cruises' && <><Ship className="h-4 w-4 text-blue-400 flex-shrink-0"/> <span className="truncate">{item.cruiseLine}</span></>}
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2 mt-auto">
+                        <button onClick={() => { setSelectedDeal(item); setShowTutorial(true); }} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition text-sm flex items-center justify-center gap-2">
+                            <Info className="h-4 w-4" /> Truco
+                        </button>
+                        <a 
+                            href={getDealLink()} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="px-4 py-3 rounded-xl bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 transition border border-blue-200 flex items-center justify-center"
+                            title="Ir a web de compra"
+                        >
+                            <ExternalLink className="h-5 w-5" />
+                        </a>
                     </div>
                   </div>
-                  <div style={{marginTop:'1rem', fontSize:'1.5rem', fontWeight:700}}>
-                    {deal.price} {deal.currency}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        /* --- LANDING EXPLICATIVA MEJORADA --- */
+        <div className="bg-white py-20 flex-grow">
+            <div className="container mx-auto px-4 max-w-6xl">
+                
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">¿Cómo funciona la magia?</h2>
+                    <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+                        Es simple: las webs de viajes te cobran más si detectan que tienes dinero. Nosotros te enseñamos a parecer un local.
+                    </p>
+                </div>
 
-      {/* MODAL TUTORIAL (Diseño Original Recuperado) */}
+                {/* STEPS VISUALES */}
+                <div className="grid md:grid-cols-3 gap-8 relative">
+                    {/* Línea conectora (solo desktop) */}
+                    <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-slate-100 -z-10"></div>
+
+                    {/* Paso 1 */}
+                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl hover:shadow-2xl transition-shadow text-center group">
+                        <div className="w-20 h-20 mx-auto bg-blue-600 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
+                            <Globe className="h-10 w-10" />
+                        </div>
+                        <h3 className="text-xl font-bold mb-3 text-slate-800">1. Escaneo Global</h3>
+                        <p className="text-slate-500 leading-relaxed">
+                            Nuestro algoritmo rastrea precios en tiempo real en más de <strong className="text-blue-600">50 países</strong> simultáneamente.
+                        </p>
+                    </div>
+
+                    {/* Paso 2 */}
+                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl hover:shadow-2xl transition-shadow text-center group relative top-0 md:-top-6">
+                        <div className="w-20 h-20 mx-auto bg-teal-500 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-teal-200 group-hover:scale-110 transition-transform">
+                            <Shield className="h-10 w-10" />
+                        </div>
+                        <h3 className="text-xl font-bold mb-3 text-slate-800">2. Selección de IP</h3>
+                        <p className="text-slate-500 leading-relaxed">
+                            Detectamos dónde está más barata la moneda o dónde hay menos impuestos y te decimos <strong className="text-teal-600">qué país elegir</strong>.
+                        </p>
+                    </div>
+
+                    {/* Paso 3 */}
+                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl hover:shadow-2xl transition-shadow text-center group">
+                        <div className="w-20 h-20 mx-auto bg-purple-600 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-purple-200 group-hover:scale-110 transition-transform">
+                            <CreditCard className="h-10 w-10" />
+                        </div>
+                        <h3 className="text-xl font-bold mb-3 text-slate-800">3. Ahorro Directo</h3>
+                        <p className="text-slate-500 leading-relaxed">
+                            Activas tu VPN, entras en modo incógnito y compras el billete al <strong className="text-purple-600">precio local</strong> sin comisiones extra.
+                        </p>
+                    </div>
+                </div>
+
+                {/* BANNER DE CONFIANZA */}
+                <div className="mt-24 bg-slate-900 rounded-[2rem] p-10 md:p-16 text-center text-white relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                    <div className="relative z-10">
+                        <h3 className="text-2xl md:text-3xl font-bold mb-6">¿Por qué es legal esto?</h3>
+                        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto text-left">
+                            <div className="flex gap-4">
+                                <CheckCircle className="h-8 w-8 text-teal-400 flex-shrink-0" />
+                                <div>
+                                    <h4 className="font-bold text-lg mb-1">Discriminación de precios</h4>
+                                    <p className="text-slate-400 text-sm">Las empresas te cobran más solo por vivir en un país rico. Usar una VPN solo nivela el terreno de juego.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <CheckCircle className="h-8 w-8 text-teal-400 flex-shrink-0" />
+                                <div>
+                                    <h4 className="font-bold text-lg mb-1">Mercado libre global</h4>
+                                    <p className="text-slate-400 text-sm">Estás comprando un producto digital. Tienes derecho a buscar la mejor oferta disponible en internet.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+      )}
+
+      {/* --- MODAL TUTORIAL CURRADO --- */}
       {showTutorial && selectedDeal && (
-        <div className="modal-overlay" onClick={() => setShowTutorial(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 style={{fontSize:'1.25rem', fontWeight:800, display:'flex', alignItems:'center', gap:'10px'}}>
-                <span style={{fontSize:'1.5rem'}}>{selectedDeal.flag}</span>
-                Truco para {selectedDeal.name || selectedDeal.country}
-              </h3>
-              <button onClick={() => setShowTutorial(false)} style={{background:'none', border:'none', cursor:'pointer'}}><X color="#94a3b8"/></button>
-            </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-2xl p-0 overflow-hidden shadow-2xl animate-fade-in-up max-h-[95vh] overflow-y-auto">
             
-            <div className="modal-body">
-              {/* PASO 1 */}
-              <div className="step-item">
-                <div className="step-circle">1</div>
-                <div>
-                  <h4 className="step-title">Activa tu VPN</h4>
-                  <p className="step-desc">Necesitas simular que estás en <strong>{selectedDeal.name || selectedDeal.country}</strong>.</p>
-                  <div className="info-box">
-                    <strong>Recomendación:</strong> Usa NordVPN o Surfshark y selecciona el servidor "{selectedDeal.name || selectedDeal.country}".
-                  </div>
+            {/* Header del Modal */}
+            <div className="bg-slate-900 p-8 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-10"><Globe className="w-32 h-32" /></div>
+                <button onClick={() => setShowTutorial(false)} className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition z-10"><X className="h-5 w-5"/></button>
+                
+                <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-green-500 text-slate-900 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Ahorro detectado</span>
+                        <span className="text-slate-400 text-xs">Vuelo a {formData.destination}</span>
+                    </div>
+                    <h3 className="text-3xl font-bold mb-1">Misión: {selectedDeal.country}</h3>
+                    <p className="text-slate-400 text-sm">Sigue estos 3 pasos exactos para desbloquear el precio.</p>
                 </div>
-              </div>
-
-              {/* PASO 2 */}
-              <div className="step-item">
-                <div className="step-circle">2</div>
-                <div>
-                  <h4 className="step-title">Modo Incógnito</h4>
-                  <p className="step-desc">Abre una ventana de <strong>Incógnito/Privada</strong>. Es crucial para borrar cookies anteriores.</p>
-                </div>
-              </div>
-
-              {/* PASO 3 */}
-              <div className="step-item">
-                <div style={{...{width:'2.5rem', height:'2.5rem', background:'#14b8a6', color:'white', borderRadius:'50%', display:'flex', justifyContent:'center', alignItems:'center', fontWeight:700, flexShrink:0}}}>3</div>
-                <div>
-                  <h4 className="step-title">Busca y Compra</h4>
-                  <p className="step-desc">Entra en Skyscanner. Verás la moneda en <strong>{selectedDeal.currency}</strong> y el precio reducido.</p>
-                </div>
-              </div>
             </div>
-            
-            <div className="modal-footer">
-              <button className="tutorial-btn" style={{marginTop:0}} onClick={() => setShowTutorial(false)}>
-                ¡Entendido, voy a probarlo!
-              </button>
+
+            <div className="p-8">
+                {/* Paso 1: VPN */}
+                <div className="flex gap-5 mb-8 relative">
+                    <div className="absolute left-6 top-10 bottom-[-20px] w-0.5 bg-slate-100"></div>
+                    <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 font-bold text-xl flex items-center justify-center border border-blue-100 z-10 shadow-sm">1</div>
+                    <div className="flex-grow">
+                        <h4 className="font-bold text-lg text-slate-800 flex items-center gap-2">Activa el "Camuflaje" <Shield className="h-4 w-4 text-slate-400"/></h4>
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-2">
+                            <p className="text-slate-600 text-sm mb-2">Abre tu VPN y conéctate a:</p>
+                            <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                                <span className="text-2xl">{selectedDeal.flag}</span>
+                                <span className="font-bold text-slate-800">{selectedDeal.country}</span>
+                                <span className="ml-auto text-green-600 text-xs font-bold flex items-center gap-1"><CheckCircle className="h-3 w-3"/> Recomendado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Paso 2: Incógnito */}
+                <div className="flex gap-5 mb-8 relative">
+                    <div className="absolute left-6 top-10 bottom-[-20px] w-0.5 bg-slate-100"></div>
+                    <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 font-bold text-xl flex items-center justify-center border border-purple-100 z-10 shadow-sm">2</div>
+                    <div className="flex-grow">
+                        <h4 className="font-bold text-lg text-slate-800 flex items-center gap-2">Modo Fantasma <EyeOff className="h-4 w-4 text-slate-400"/></h4>
+                        <p className="text-slate-600 text-sm mt-1">Las aerolíneas rastrean tus cookies. Es <strong>obligatorio</strong> que abras una nueva ventana de incógnito.</p>
+                        <div className="flex gap-2 mt-2">
+                            <span className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500 font-mono">Ctrl + Shift + N</span>
+                            <span className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500 font-mono">Cmd + Shift + N</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Paso 3: Compra */}
+                <div className="flex gap-5">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-green-50 text-green-600 font-bold text-xl flex items-center justify-center border border-green-100 z-10 shadow-sm">3</div>
+                    <div className="flex-grow">
+                        <h4 className="font-bold text-lg text-slate-800 flex items-center gap-2">Paga en local <CreditCard className="h-4 w-4 text-slate-400"/></h4>
+                        <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 mt-2 text-sm text-yellow-800 flex items-start gap-2">
+                            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-600"/>
+                            <div>
+                                <p className="font-bold mb-1">Truco final:</p>
+                                <p>No cambies la moneda a {userCurrency} en la web de la aerolínea. Paga en <strong>{selectedDeal.currency}</strong>. Tu banco hará mejor cambio que ellos.</p>
+                            </div>
+                        </div>
+                        <a 
+                            href={getDealLink()} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="w-full mt-4 bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
+                        >
+                            Ir a la web de compra ahora <ExternalLink className="h-4 w-4"/>
+                        </a>
+                    </div>
+                </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* --- FOOTER --- */}
+      <footer className="bg-slate-900 text-slate-400 py-8 text-center text-sm mt-auto">
+        <p>© 2024 TRAVPN.com - Comparador de precios global.</p>
+      </footer>
 
     </div>
   );
