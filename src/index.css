@@ -1,10 +1,9 @@
-/* Borra todo lo anterior y pega esto */
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+/* ¡IMPORTANTE! 
+   Hemos borrado los imports de Tailwind aquí para evitar el error de "Build failed".
+   Ahora los estilos se cargan desde el archivo index.html usando el CDN.
+*/
 
-/* Añadimos un estilo base para asegurarnos de que carga algo */
 body {
-  background-color: #0f172a; /* Azul oscuro por si falla lo demás */
-  color: white;
+  margin: 0;
+  background-color: #0f172a; /* Fondo azul oscuro de seguridad */
 }
