@@ -200,8 +200,8 @@ const App = () => {
         </div>
       </div>
 
-      {/* RESULTADOS */}
-      {results && (
+      {/* RESULTADOS O TUTORIAL */}
+      {results ? (
         <div className="container mx-auto px-4 py-8 max-w-6xl flex-grow animate-fade-in-up">
             <h2 className="text-3xl font-bold mb-8 text-slate-800">Resultados para {formData.destination}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -241,7 +241,7 @@ const App = () => {
                     </div>
 
                     <div className="flex gap-2">
-                        {/* BOTÓN TRUCO RECUPERADO */}
+                        {/* BOTÓN TRUCO */}
                         <button onClick={() => { setSelectedDeal(item); setShowTutorial(true); }} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-800 transition">
                             <Info className="h-4 w-4" /> Truco
                         </button>
@@ -252,26 +252,51 @@ const App = () => {
               })}
             </div>
         </div>
+      ) : (
+        /* --- LANDING / TUTORIAL (VISIBLE CUANDO NO HAY RESULTADOS) --- */
+        <div className="bg-white py-20 flex-grow">
+            <div className="container mx-auto px-4 max-w-6xl">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">¿Cómo funciona la magia?</h2>
+                    <p className="text-slate-500 text-lg max-w-2xl mx-auto">Es simple: las webs de viajes te cobran más si detectan que tienes dinero. Nosotros te enseñamos a parecer un local.</p>
+                </div>
+                <div className="grid md:grid-cols-3 gap-8 relative">
+                    <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-slate-100 -z-10"></div>
+                    {/* Paso 1 */}
+                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl text-center group">
+                        <div className="w-20 h-20 mx-auto bg-blue-600 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform"><Globe className="h-10 w-10" /></div>
+                        <h3 className="text-xl font-bold mb-3 text-slate-800">1. Escaneo Global</h3>
+                        <p className="text-slate-500 leading-relaxed">Rastreamos precios en tiempo real en más de <strong className="text-blue-600">50 países</strong>.</p>
+                    </div>
+                    {/* Paso 2 */}
+                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl text-center group relative top-0 md:-top-6">
+                        <div className="w-20 h-20 mx-auto bg-teal-500 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-teal-200 group-hover:scale-110 transition-transform"><Shield className="h-10 w-10" /></div>
+                        <h3 className="text-xl font-bold mb-3 text-slate-800">2. Selección de IP</h3>
+                        <p className="text-slate-500 leading-relaxed">Te decimos <strong className="text-teal-600">qué país elegir</strong> para pagar menos impuestos y divisa.</p>
+                    </div>
+                    {/* Paso 3 */}
+                    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl text-center group">
+                        <div className="w-20 h-20 mx-auto bg-purple-600 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-purple-200 group-hover:scale-110 transition-transform"><CreditCard className="h-10 w-10" /></div>
+                        <h3 className="text-xl font-bold mb-3 text-slate-800">3. Ahorro Directo</h3>
+                        <p className="text-slate-500 leading-relaxed">Activas tu VPN y compras el billete al <strong className="text-purple-600">precio local</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
       )}
       
-      {/* MODAL TUTORIAL COMPLETO (Recuperado de v3.0) */}
+      {/* MODAL TUTORIAL COMPLETO */}
       {showTutorial && selectedDeal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-2xl p-0 overflow-hidden shadow-2xl animate-fade-in-up max-h-[95vh] overflow-y-auto">
-            
             <div className="bg-slate-900 p-8 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-10"><Globe className="w-32 h-32" /></div>
                 <button onClick={() => setShowTutorial(false)} className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition z-10"><X className="h-5 w-5"/></button>
                 <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="bg-green-500 text-slate-900 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Ahorro detectado</span>
-                        <span className="text-slate-400 text-xs">Destino: {formData.destination}</span>
-                    </div>
+                    <div className="flex items-center gap-2 mb-2"><span className="bg-green-500 text-slate-900 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Ahorro detectado</span><span className="text-slate-400 text-xs">Destino: {formData.destination}</span></div>
                     <h3 className="text-3xl font-bold mb-1">Misión: {selectedDeal.country}</h3>
                     <p className="text-slate-400 text-sm">Sigue estos 3 pasos para desbloquear el precio.</p>
                 </div>
             </div>
-
             <div className="p-8">
                 {/* Paso 1: CON AFILIACIÓN */}
                 <div className="flex gap-5 mb-8 relative">
@@ -279,54 +304,31 @@ const App = () => {
                     <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 font-bold text-xl flex items-center justify-center border border-blue-100 z-10 shadow-sm">1</div>
                     <div className="flex-grow">
                         <h4 className="font-bold text-lg text-slate-800 flex items-center gap-2">Conecta tu VPN</h4>
-                        
                         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-2">
                             <p className="text-slate-600 text-sm mb-3">Conéctate a un servidor en <strong>{selectedDeal.country}</strong>.</p>
-                            
-                            {/* ENLACE DE AFILIADO */}
-                            <a 
-                                href="https://surfshark.club/friend" 
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-between bg-white border border-blue-200 p-3 rounded-lg hover:shadow-md transition group"
-                            >
+                            <a href="https://surfshark.club/friend" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between bg-white border border-blue-200 p-3 rounded-lg hover:shadow-md transition group">
                                 <div className="flex items-center gap-3">
-                                    <div className="bg-blue-600 text-white p-1.5 rounded">
-                                        <Shield className="h-4 w-4"/>
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-900 text-sm">¿No tienes VPN?</p>
-                                        <p className="text-xs text-green-600 font-bold">Oferta: 82% DTO + Meses Gratis</p>
-                                    </div>
+                                    <div className="bg-blue-600 text-white p-1.5 rounded"><Shield className="h-4 w-4"/></div>
+                                    <div><p className="font-bold text-slate-900 text-sm">¿No tienes VPN?</p><p className="text-xs text-green-600 font-bold">Oferta: 82% DTO + Meses Gratis</p></div>
                                 </div>
                                 <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-blue-600"/>
                             </a>
                         </div>
                     </div>
                 </div>
-
                 {/* Paso 2 */}
                 <div className="flex gap-5 mb-8 relative">
                     <div className="absolute left-6 top-10 bottom-[-20px] w-0.5 bg-slate-100"></div>
                     <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 font-bold text-xl flex items-center justify-center border border-purple-100 z-10 shadow-sm">2</div>
-                    <div className="flex-grow">
-                        <h4 className="font-bold text-lg text-slate-800 flex items-center gap-2">Abre Incógnito</h4>
-                        <p className="text-slate-600 text-sm mt-1">Usa <strong>Ctrl + Shift + N</strong>. Es vital para limpiar cookies.</p>
-                    </div>
+                    <div className="flex-grow"><h4 className="font-bold text-lg text-slate-800 flex items-center gap-2">Abre Incógnito</h4><p className="text-slate-600 text-sm mt-1">Usa <strong>Ctrl + Shift + N</strong>. Es vital para limpiar cookies.</p></div>
                 </div>
-
                 {/* Paso 3 */}
                 <div className="flex gap-5">
                     <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-green-50 text-green-600 font-bold text-xl flex items-center justify-center border border-green-100 z-10 shadow-sm">3</div>
                     <div className="flex-grow">
                         <h4 className="font-bold text-lg text-slate-800 flex items-center gap-2">Paga en local</h4>
-                        <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 mt-2 text-sm text-yellow-800">
-                            <p className="font-bold mb-1">⚠️ Importante:</p>
-                            <p>Paga siempre en <strong>{selectedDeal.currency}</strong>. No dejes que la web convierta a {userCurrency}.</p>
-                        </div>
-                        <a href={getDealLink()} target="_blank" rel="noopener noreferrer" className="w-full mt-4 bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
-                            Ir a la web de compra <ExternalLink className="h-4 w-4"/>
-                        </a>
+                        <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 mt-2 text-sm text-yellow-800"><p className="font-bold mb-1">⚠️ Importante:</p><p>Paga siempre en <strong>{selectedDeal.currency}</strong>. No dejes que la web convierta a {userCurrency}.</p></div>
+                        <a href={getDealLink()} target="_blank" rel="noopener noreferrer" className="w-full mt-4 bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2">Ir a la web de compra <ExternalLink className="h-4 w-4"/></a>
                     </div>
                 </div>
             </div>
