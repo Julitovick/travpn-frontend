@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plane, MapPin, Globe, Info, X, Hotel, Ship, Shield, CheckCircle, ExternalLink, AlertTriangle, EyeOff, CreditCard, Calendar, Lock, Users, ChevronDown, Plus, Minus, ChevronRight, Check, Bell, Share2, HelpCircle } from 'lucide-react';
+import { Search, Plane, MapPin, Globe, Info, X, Hotel, Ship, Shield, CheckCircle, ExternalLink, AlertTriangle, EyeOff, CreditCard, Calendar, Lock, Users, ChevronDown, Plus, Minus, ChevronRight, Check } from 'lucide-react';
 
 // ✅ URL DE TU BACKEND
 const API_URL_BASE = 'https://travpn-backend.onrender.com/api'; 
@@ -12,6 +12,311 @@ const EXCHANGE_RATES = {
   'BGN': 0.51, 
 };
 
+// --- DICCIONARIO DE TRADUCCIONES ---
+const TRANSLATIONS = {
+  ES: {
+    searching_badge: "Buscando en 50+ países reales 🌍",
+    hero_title_1: "Ubicación virtual.",
+    hero_title_2: "Ahorro real.",
+    hero_subtitle: "Las aerolíneas cambian los precios según tu ubicación. Nosotros te decimos desde dónde conectarte para pagar menos.",
+    tab_flights: "Vuelos",
+    tab_hotels: "Hoteles",
+    tab_cruises: "Cruceros",
+    label_roundtrip: "Ida y vuelta",
+    label_oneway: "Solo ida",
+    label_direct: "Solo vuelos directos",
+    label_origin: "Origen",
+    label_destination: "Destino",
+    label_date_start: "Ida",
+    label_date_end: "Vuelta",
+    label_checkin: "Entrada",
+    label_checkout: "Salida",
+    label_passengers: "Pasajeros",
+    label_guests: "Huéspedes",
+    btn_search: "Buscar Ahorro Real",
+    btn_loading: "Buscando en tiempo real... Esto puede tardar unos segundos 🚀",
+    error_no_results: "No se encontraron resultados disponibles en este momento para las fechas seleccionadas.",
+    error_server: "El servidor de búsqueda no responde. Verifica tu conexión.",
+    result_title: "Resultados para",
+    result_best_option: "Mejor Opción",
+    result_vpn: "VPN:",
+    result_pay_here: "Pagar desde aquí",
+    result_trick: "Truco",
+    magic_title: "¿Cómo funciona la magia?",
+    magic_subtitle: "Es simple: las webs de viajes te cobran más si detectan que tienes dinero. Nosotros te enseñamos a parecer un local.",
+    step_1_title: "1. Escaneo Global",
+    step_1_desc: "Rastreamos precios en tiempo real en más de 50 países.",
+    step_2_title: "2. Selección de IP",
+    step_2_desc: "Te decimos qué país elegir para pagar menos impuestos y divisa.",
+    step_3_title: "3. Ahorro Directo",
+    step_3_desc: "Activas tu VPN y compras el billete al precio local.",
+    modal_title: "Misión:",
+    modal_subtitle: "Sigue estos 3 pasos para desbloquear el precio.",
+    modal_step_1: "Conecta tu VPN",
+    modal_step_1_desc: "Conéctate a un servidor en",
+    modal_vpn_offer: "¿No tienes VPN?",
+    modal_vpn_deal: "Oferta: 72% DTO en NordVPN",
+    modal_step_2: "Abre Incógnito",
+    modal_step_2_desc: "Usa Ctrl + Shift + N. Es vital para limpiar cookies.",
+    modal_step_3: "Paga en local",
+    modal_warning: "⚠️ Importante:",
+    modal_warning_desc: "Paga siempre en la moneda local. No dejes que la web convierta a tu moneda.",
+    modal_btn_go: "Ir a la web de compra",
+    adults: "Adultos",
+    children: "Niños",
+    infants: "Bebés",
+    traveler: "Viajero",
+    travelers: "Viajeros",
+    guest: "Huésped",
+    guests: "Huéspedes",
+    age_adult: "12+ años",
+    age_child: "2-11 años",
+    age_infant: "< 2 años",
+    footer_text: "El comparador inteligente que viaja contigo."
+  },
+  EN: {
+    searching_badge: "Searching in 50+ real countries 🌍",
+    hero_title_1: "Virtual location.",
+    hero_title_2: "Real savings.",
+    hero_subtitle: "Airlines change prices based on your location. We tell you where to connect from to pay less.",
+    tab_flights: "Flights",
+    tab_hotels: "Hotels",
+    tab_cruises: "Cruises",
+    label_roundtrip: "Roundtrip",
+    label_oneway: "One way",
+    label_direct: "Direct flights only",
+    label_origin: "Origin",
+    label_destination: "Destination",
+    label_date_start: "Depart",
+    label_date_end: "Return",
+    label_checkin: "Check-in",
+    label_checkout: "Check-out",
+    label_passengers: "Passengers",
+    label_guests: "Guests",
+    btn_search: "Search Real Savings",
+    btn_loading: "Searching in real time... This may take a few seconds 🚀",
+    error_no_results: "No results found at this time for the selected dates.",
+    error_server: "Search server not responding. Check your connection.",
+    result_title: "Results for",
+    result_best_option: "Best Option",
+    result_vpn: "VPN:",
+    result_pay_here: "Pay from here",
+    result_trick: "Trick",
+    magic_title: "How does the magic work?",
+    magic_subtitle: "It's simple: travel sites charge you more if they detect you have money. We teach you to look like a local.",
+    step_1_title: "1. Global Scan",
+    step_1_desc: "We track real-time prices in over 50 countries.",
+    step_2_title: "2. IP Selection",
+    step_2_desc: "We tell you which country to choose to pay less taxes and currency fees.",
+    step_3_title: "3. Direct Savings",
+    step_3_desc: "Activate your VPN and buy the ticket at the local price.",
+    modal_title: "Mission:",
+    modal_subtitle: "Follow these 3 steps to unlock the price.",
+    modal_step_1: "Connect your VPN",
+    modal_step_1_desc: "Connect to a server in",
+    modal_vpn_offer: "Don't have a VPN?",
+    modal_vpn_deal: "Offer: 72% OFF at NordVPN",
+    modal_step_2: "Open Incognito",
+    modal_step_2_desc: "Use Ctrl + Shift + N. Vital to clear cookies.",
+    modal_step_3: "Pay local",
+    modal_warning: "⚠️ Important:",
+    modal_warning_desc: "Always pay in the local currency. Don't let the site convert to your currency.",
+    modal_btn_go: "Go to booking site",
+    adults: "Adults",
+    children: "Children",
+    infants: "Infants",
+    traveler: "Traveler",
+    travelers: "Travelers",
+    guest: "Guest",
+    guests: "Guests",
+    age_adult: "12+ years",
+    age_child: "2-11 years",
+    age_infant: "< 2 years",
+    footer_text: "The smart comparator that travels with you."
+  },
+  DE: {
+    searching_badge: "Suche in 50+ echten Ländern 🌍",
+    hero_title_1: "Virtueller Standort.",
+    hero_title_2: "Echte Ersparnis.",
+    hero_subtitle: "Fluggesellschaften ändern Preise basierend auf Ihrem Standort. Wir sagen Ihnen, wo Sie sich verbinden müssen, um weniger zu zahlen.",
+    tab_flights: "Flüge",
+    tab_hotels: "Hotels",
+    tab_cruises: "Kreuzfahrten",
+    label_roundtrip: "Hin- und Rückflug",
+    label_oneway: "Hinflug",
+    label_direct: "Nur Direktflüge",
+    label_origin: "Herkunft",
+    label_destination: "Ziel",
+    label_date_start: "Abflug",
+    label_date_end: "Rückflug",
+    label_checkin: "Anreise",
+    label_checkout: "Abreise",
+    label_passengers: "Passagiere",
+    label_guests: "Gäste",
+    btn_search: "Echte Ersparnisse suchen",
+    btn_loading: "Suche in Echtzeit... Dies kann einige Sekunden dauern 🚀",
+    error_no_results: "Keine Ergebnisse für die ausgewählten Daten gefunden.",
+    error_server: "Suchserver antwortet nicht. Überprüfen Sie Ihre Verbindung.",
+    result_title: "Ergebnisse für",
+    result_best_option: "Beste Option",
+    result_vpn: "VPN:",
+    result_pay_here: "Von hier bezahlen",
+    result_trick: "Trick",
+    magic_title: "Wie funktioniert die Magie?",
+    magic_subtitle: "Es ist einfach: Reiseseiten berechnen mehr, wenn sie Geld vermuten. Wir bringen Ihnen bei, wie ein Einheimischer auszusehen.",
+    step_1_title: "1. Globaler Scan",
+    step_1_desc: "Wir verfolgen Echtzeitpreise in über 50 Ländern.",
+    step_2_title: "2. IP-Auswahl",
+    step_2_desc: "Wir sagen Ihnen, welches Land Sie wählen müssen, um weniger Steuern und Währungsgebühren zu zahlen.",
+    step_3_title: "3. Direkte Ersparnis",
+    step_3_desc: "Aktivieren Sie Ihr VPN und kaufen Sie das Ticket zum lokalen Preis.",
+    modal_title: "Mission:",
+    modal_subtitle: "Folgen Sie diesen 3 Schritten, um den Preis freizuschalten.",
+    modal_step_1: "Verbinden Sie Ihr VPN",
+    modal_step_1_desc: "Verbinden Sie sich mit einem Server in",
+    modal_vpn_offer: "Kein VPN?",
+    modal_vpn_deal: "Angebot: 72% Rabatt bei NordVPN",
+    modal_step_2: "Inkognito öffnen",
+    modal_step_2_desc: "Verwenden Sie Strg + Umschalt + N. Wichtig, um Cookies zu löschen.",
+    modal_step_3: "Lokal bezahlen",
+    modal_warning: "⚠️ Wichtig:",
+    modal_warning_desc: "Zahlen Sie immer in der lokalen Währung. Lassen Sie die Website nicht in Ihre Währung umrechnen.",
+    modal_btn_go: "Zur Buchungsseite",
+    adults: "Erwachsene",
+    children: "Kinder",
+    infants: "Kleinkinder",
+    traveler: "Reisender",
+    travelers: "Reisende",
+    guest: "Gast",
+    guests: "Gäste",
+    age_adult: "12+ Jahre",
+    age_child: "2-11 Jahre",
+    age_infant: "< 2 Jahre",
+    footer_text: "Der intelligente Vergleich, der mit Ihnen reist."
+  },
+  FR: {
+    searching_badge: "Recherche dans 50+ pays réels 🌍",
+    hero_title_1: "Lieu virtuel.",
+    hero_title_2: "Économies réelles.",
+    hero_subtitle: "Les compagnies aériennes changent les prix selon votre emplacement. Nous vous disons d'où vous connecter pour payer moins.",
+    tab_flights: "Vols",
+    tab_hotels: "Hôtels",
+    tab_cruises: "Croisières",
+    label_roundtrip: "Aller-retour",
+    label_oneway: "Aller simple",
+    label_direct: "Vols directs uniquement",
+    label_origin: "Origine",
+    label_destination: "Destination",
+    label_date_start: "Départ",
+    label_date_end: "Retour",
+    label_checkin: "Arrivée",
+    label_checkout: "Départ",
+    label_passengers: "Passagers",
+    label_guests: "Invités",
+    btn_search: "Chercher Économies",
+    btn_loading: "Recherche en temps réel... Cela peut prendre quelques secondes 🚀",
+    error_no_results: "Aucun résultat trouvé pour les dates sélectionnées.",
+    error_server: "Le serveur de recherche ne répond pas. Vérifiez votre connexion.",
+    result_title: "Résultats pour",
+    result_best_option: "Meilleure Option",
+    result_vpn: "VPN:",
+    result_pay_here: "Payer d'ici",
+    result_trick: "Astuce",
+    magic_title: "Comment fonctionne la magie ?",
+    magic_subtitle: "C'est simple : les sites de voyage vous facturent plus s'ils détectent que vous avez de l'argent. Nous vous apprenons à passer pour un local.",
+    step_1_title: "1. Scan Global",
+    step_1_desc: "Nous suivons les prix en temps réel dans plus de 50 pays.",
+    step_2_title: "2. Sélection IP",
+    step_2_desc: "Nous vous disons quel pays choisir pour payer moins de taxes.",
+    step_3_title: "3. Économie Directe",
+    step_3_desc: "Activez votre VPN et achetez le billet au prix local.",
+    modal_title: "Mission:",
+    modal_subtitle: "Suivez ces 3 étapes pour débloquer le prix.",
+    modal_step_1: "Connectez votre VPN",
+    modal_step_1_desc: "Connectez-vous à un serveur en",
+    modal_vpn_offer: "Pas de VPN ?",
+    modal_vpn_deal: "Offre : -72% chez NordVPN",
+    modal_step_2: "Ouvrir Incognito",
+    modal_step_2_desc: "Utilisez Ctrl + Shift + N. Vital pour effacer les cookies.",
+    modal_step_3: "Payer local",
+    modal_warning: "⚠️ Important:",
+    modal_warning_desc: "Payez toujours dans la devise locale. Ne laissez pas le site convertir.",
+    modal_btn_go: "Aller au site de réservation",
+    adults: "Adultes",
+    children: "Enfants",
+    infants: "Bébés",
+    traveler: "Voyageur",
+    travelers: "Voyageurs",
+    guest: "Invité",
+    guests: "Invités",
+    age_adult: "12+ ans",
+    age_child: "2-11 ans",
+    age_infant: "< 2 ans",
+    footer_text: "Le comparateur intelligent qui voyage avec vous."
+  },
+  IT: {
+    searching_badge: "Ricerca in 50+ paesi reali 🌍",
+    hero_title_1: "Posizione virtuale.",
+    hero_title_2: "Risparmio reale.",
+    hero_subtitle: "Le compagnie aeree cambiano i prezzi in base alla tua posizione. Ti diciamo da dove connetterti per pagare meno.",
+    tab_flights: "Voli",
+    tab_hotels: "Hotel",
+    tab_cruises: "Crociere",
+    label_roundtrip: "Andata e ritorno",
+    label_oneway: "Solo andata",
+    label_direct: "Solo voli diretti",
+    label_origin: "Origine",
+    label_destination: "Destinazione",
+    label_date_start: "Partenza",
+    label_date_end: "Ritorno",
+    label_checkin: "Check-in",
+    label_checkout: "Check-out",
+    label_passengers: "Passeggeri",
+    label_guests: "Ospiti",
+    btn_search: "Cerca Risparmio",
+    btn_loading: "Ricerca in tempo reale... Potrebbe richiedere alcuni secondi 🚀",
+    error_no_results: "Nessun risultato trovato per le date selezionate.",
+    error_server: "Il server di ricerca non risponde. Controlla la tua connessione.",
+    result_title: "Risultati per",
+    result_best_option: "Migliore Opzione",
+    result_vpn: "VPN:",
+    result_pay_here: "Paga da qui",
+    result_trick: "Trucco",
+    magic_title: "Come funziona la magia?",
+    magic_subtitle: "È semplice: i siti di viaggi ti fanno pagare di più se rilevano che hai soldi. Ti insegniamo a sembrare un locale.",
+    step_1_title: "1. Scansione Globale",
+    step_1_desc: "Tracciamo i prezzi in tempo reale in oltre 50 paesi.",
+    step_2_title: "2. Selezione IP",
+    step_2_desc: "Ti diciamo quale paese scegliere per pagare meno tasse.",
+    step_3_title: "3. Risparmio Diretto",
+    step_3_desc: "Attiva la tua VPN e acquista il biglietto al prezzo locale.",
+    modal_title: "Missione:",
+    modal_subtitle: "Segui questi 3 passaggi per sbloccare il prezzo.",
+    modal_step_1: "Connetti la tua VPN",
+    modal_step_1_desc: "Connettiti a un server in",
+    modal_vpn_offer: "Non hai una VPN?",
+    modal_vpn_deal: "Offerta: 72% Sconto su NordVPN",
+    modal_step_2: "Apri Incognito",
+    modal_step_2_desc: "Usa Ctrl + Shift + N. Vitale per cancellare i cookie.",
+    modal_step_3: "Paga locale",
+    modal_warning: "⚠️ Importante:",
+    modal_warning_desc: "Paga sempre nella valuta locale. Non lasciare che il sito converta.",
+    modal_btn_go: "Vai al sito di prenotazione",
+    adults: "Adulti",
+    children: "Bambini",
+    infants: "Neonati",
+    traveler: "Viaggiatore",
+    travelers: "Viaggiatori",
+    guest: "Ospite",
+    guests: "Ospiti",
+    age_adult: "12+ anni",
+    age_child: "2-11 anni",
+    age_infant: "< 2 anni",
+    footer_text: "Il comparatore intelligente che viaggia con te."
+  }
+};
+
+// --- BASE DE DATOS DE AEROPUERTOS ---
 const AIRPORTS = [
   {city:"Madrid Barajas",code:"MAD",country:"España"},{city:"Barcelona El Prat",code:"BCN",country:"España"},
   {city:"Palma de Mallorca",code:"PMI",country:"España"},{city:"Málaga Costa del Sol",code:"AGP",country:"España"},
@@ -38,6 +343,7 @@ const BACKGROUND_IMAGES = [
   'https://images.unsplash.com/photo-1528164344705-47542687000d?q=80&w=2092'
 ];
 
+// IMÁGENES DE BANDERAS (Usando FlagCDN para calidad)
 const LANGUAGES = [
     { code: 'ES', label: 'Español', flagUrl: 'https://flagcdn.com/w40/es.png' },
     { code: 'EN', label: 'English', flagUrl: 'https://flagcdn.com/w40/gb.png' },
@@ -51,64 +357,6 @@ const CURRENCIES = [
     { code: 'USD', symbol: '$', label: 'Dólar' }
 ];
 
-const LIVE_SAVINGS = [
-    "🔥 Juan de Madrid ahorró 450€ en vuelo a Tokio",
-    "🔥 Laura de Barcelona ahorró 120€ en hotel en París",
-    "🔥 Carlos de México ahorró 300€ usando VPN Turquía",
-    "🔥 Ana de Bogotá consiguió un crucero por 250€ menos"
-];
-
-// --- TRADUCCIONES MEJORADAS ---
-const TRANSLATIONS = {
-  ES: {
-    searching_badge: "Buscando en 50+ países reales 🌍",
-    hero_title_1: "Ubicación virtual.",
-    hero_title_2: "Ahorro real.",
-    hero_subtitle: "Las aerolíneas cambian los precios según tu ubicación. Nosotros te decimos desde dónde conectarte para pagar menos.",
-    tab_flights: "Vuelos", tab_hotels: "Hoteles", tab_cruises: "Cruceros",
-    label_roundtrip: "Ida y vuelta", label_oneway: "Solo ida", label_direct: "Solo vuelos directos",
-    label_origin: "Origen", label_destination: "Destino",
-    label_date_start: "Ida", label_date_end: "Vuelta", label_checkin: "Entrada", label_checkout: "Salida",
-    label_passengers: "Pasajeros", label_guests: "Huéspedes",
-    btn_search: "Buscar Ahorro Real", btn_loading: "Rastreando precios globales... 🚀",
-    error_no_results: "No hay resultados para estas fechas. Intenta ser flexible.",
-    error_server: "El servidor no responde. Verifica tu conexión.",
-    result_title: "Resultados para", result_best_option: "Mejor Opción",
-    result_vpn: "VPN:", result_pay_here: "Pagar desde aquí", result_trick: "Truco",
-    
-    // TUTORIAL HOME MEJORADO
-    magic_title: "¿Cómo funciona la magia?",
-    magic_subtitle: "El secreto que las aerolíneas no quieren que sepas: el precio depende de tu IP.",
-    step_1_title: "Escaneo Global",
-    step_1_desc: "Nuestro algoritmo busca tu vuelo simultáneamente en más de 50 países para encontrar discrepancias de precio.",
-    step_2_title: "Selección de IP",
-    step_2_desc: "Identificamos el país con la moneda más débil o menos impuestos para tu ruta específica.",
-    step_3_title: "Ahorro Directo",
-    step_3_desc: "Te decimos dónde conectarte. Usas tu VPN y compras como si fueras un local, ahorrando hasta un 40%.",
-    trust_title: "¿Es seguro y legal?",
-    trust_desc_1: "Es 100% Legal. Estás comprando un producto digital en un mercado global. Tienes derecho a elegir dónde compras.",
-    trust_desc_2: "Sin Riesgos. La reserva se hace directamente en la web oficial de la aerolínea o Booking. Nosotros solo te damos el enlace.",
-
-    modal_title: "Misión:", modal_subtitle: "Sigue estos 3 pasos para desbloquear el precio.",
-    modal_step_1: "Conecta tu VPN", modal_step_1_desc: "Conéctate a un servidor en",
-    modal_vpn_offer: "¿No tienes VPN?", modal_vpn_deal: "Oferta: 72% DTO en NordVPN",
-    modal_step_2: "Abre Incógnito", modal_step_2_desc: "Usa Ctrl + Shift + N. Vital para limpiar cookies.",
-    modal_step_3: "Paga en local", modal_warning: "⚠️ Importante:", modal_warning_desc: "Paga siempre en la moneda local. No dejes que la web convierta.",
-    modal_btn_go: "Ir a la web de compra",
-    
-    newsletter_title: "📬 Alertas de Error de Precio",
-    newsletter_desc: "Únete a 10.000+ viajeros. Te avisamos cuando encontremos chollos absurdos.",
-    newsletter_btn: "Suscribirme",
-    save_badge: "AHORRAS",
-    
-    adults: "Adultos", children: "Niños", infants: "Bebés",
-    traveler: "Viajero", travelers: "Viajeros", guest: "Huésped", guests: "Huéspedes",
-    age_adult: "12+ años", age_child: "2-11 años", age_infant: "< 2 años",
-    footer_text: "El comparador inteligente que viaja contigo."
-  },
-  // ... (Mantengo el resto de idiomas por brevedad, usando ES como base si falta alguna clave nueva)
-};
-
 const App = () => {
   const [activeTab, setActiveTab] = useState('flights');
   const [tripType, setTripType] = useState('roundtrip'); 
@@ -120,9 +368,8 @@ const App = () => {
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [showTutorial, setShowTutorial] = useState(false);
   const [bgImage, setBgImage] = useState('');
-  const [tickerIndex, setTickerIndex] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(0);
   
+  // Estados para los menús desplegables personalizados
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isCurrencyMenuOpen, setIsCurrencyMenuOpen] = useState(false);
   const [isPassengerMenuOpen, setIsPassengerMenuOpen] = useState(false);
@@ -140,15 +387,10 @@ const App = () => {
     directFlights: false 
   });
 
-  const t = (key) => {
-      const dict = TRANSLATIONS[userLanguage] || TRANSLATIONS['ES'];
-      return dict[key] || TRANSLATIONS['ES'][key] || key;
-  };
+  const t = (key) => TRANSLATIONS[userLanguage][key] || TRANSLATIONS['ES'][key];
 
   useEffect(() => {
     setBgImage(BACKGROUND_IMAGES[Math.floor(Math.random() * BACKGROUND_IMAGES.length)]);
-    const tickerInterval = setInterval(() => { setTickerIndex(prev => (prev + 1) % LIVE_SAVINGS.length); }, 4000);
-    
     const handleClickOutside = (event) => {
       if (langMenuRef.current && !langMenuRef.current.contains(event.target)) setIsLangMenuOpen(false);
       if (currencyMenuRef.current && !currencyMenuRef.current.contains(event.target)) setIsCurrencyMenuOpen(false);
@@ -156,10 +398,9 @@ const App = () => {
       if (!event.target.closest('.suggestion-box')) setShowSuggestions({ origin: false, destination: false });
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => { document.removeEventListener("mousedown", handleClickOutside); clearInterval(tickerInterval); };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ... (Funciones de manejo de inputs y búsqueda se mantienen igual) ...
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (value.length > 1) {
@@ -181,13 +422,13 @@ const App = () => {
   };
 
   const updateCount = (type, category, delta) => {
-      setFormData(prev => {
-          const current = type === 'flight' ? prev.passengers[category] : prev.guests[category];
-          const newValue = Math.max(0, current + delta);
-          if (category === 'adults' && newValue < 1) return prev;
-          if (type === 'flight') return { ...prev, passengers: { ...prev.passengers, [category]: newValue } };
-          else return { ...prev, guests: { ...prev.guests, [category]: newValue } };
-      });
+    setFormData(prev => {
+        const current = type === 'flight' ? prev.passengers[category] : prev.guests[category];
+        const newValue = Math.max(0, current + delta);
+        if (category === 'adults' && newValue < 1) return prev;
+        if (type === 'flight') return { ...prev, passengers: { ...prev.passengers, [category]: newValue } };
+        else return { ...prev, guests: { ...prev.guests, [category]: newValue } };
+    });
   };
 
   const getTotalTravelers = () => {
@@ -220,13 +461,6 @@ const App = () => {
     return Math.round(priceInEur * rateFromEur).toLocaleString();
   };
 
-  const shareDeal = (item) => {
-    const dealUrl = "https://travpn.com"; 
-    const text = `¡Mira qué chollo! Vuelo a ${formData.destination} por ${item.price} ${item.currency} usando VPN de ${item.country}. Lo vi en ${dealUrl}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
   const handleSearch = async (e) => {
     e.preventDefault();
     if (API_URL_BASE.includes('PON_AQUI')) return alert("Configura la URL del servidor en App.jsx");
@@ -235,7 +469,6 @@ const App = () => {
     setLoading(true);
     setResults(null);
     setErrorMsg(null);
-    setMaxPrice(0);
     setIsPassengerMenuOpen(false);
     setShowSuggestions({ origin: false, destination: false });
 
@@ -245,11 +478,13 @@ const App = () => {
     let endpoint = activeTab === 'hotels' ? '/hotels' : activeTab === 'cruises' ? '/cruises' : '/search';
 
     try {
+      // BÚSQUEDA 100% REAL
       const response = await fetch(`${API_URL_BASE}${endpoint}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
       });
       
-      if (!response.ok) throw new Error('Error de conexión');
+      if (!response.ok) throw new Error('Error de conexión con el servidor');
+      
       const data = await response.json();
       
       if (!data || data.length === 0) {
@@ -266,44 +501,47 @@ const App = () => {
             const priceB = b.price * (EXCHANGE_RATES[b.currency] || 1);
             return priceA - priceB;
           });
-
-          if (processed.length > 0) {
-             const pricesInUserCurrency = processed.map(p => p.price * (EXCHANGE_RATES[p.currency] || 1) * (1 / (EXCHANGE_RATES[userCurrency] || 1)));
-             setMaxPrice(Math.max(...pricesInUserCurrency));
-          }
-
           setResults(processed);
       }
     } catch (error) {
       console.error(error);
+      // SI FALLA, MUESTRA ERROR REAL. NADA DE DEMOS.
       setErrorMsg(t('error_server'));
     } finally { setLoading(false); }
   };
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-800 flex flex-col">
-      
-      {/* BARRA NOTIFICACIONES */}
-      <div className="bg-teal-500 text-white text-xs font-bold py-2 text-center relative z-50 overflow-hidden shadow-sm">
-          <div className="animate-fade-in flex justify-center items-center gap-2">
-            <Bell className="h-3 w-3 fill-current" /> {LIVE_SAVINGS[tickerIndex]}
-          </div>
-      </div>
-
       {/* HEADER */}
       <div className="bg-blue-900 text-white pb-64 relative overflow-hidden transition-all duration-1000">
+        
+        {/* TOP BAR: SELECTORES IDIOMA Y MONEDA (DISEÑO FINAL) */}
         <div className="absolute top-4 right-4 z-20 flex gap-4 items-center">
-            {/* IDIOMA */}
+            
+            {/* Selector Idioma Custom */}
             <div className="relative" ref={langMenuRef}>
-                <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 transition text-white">
-                    <img src={LANGUAGES.find(l => l.code === userLanguage)?.flagUrl} alt="flag" className="w-5 h-auto rounded-sm shadow-sm"/>
+                <button 
+                    onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                    className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 transition text-white"
+                >
+                    <img 
+                        src={LANGUAGES.find(l => l.code === userLanguage)?.flagUrl} 
+                        alt="flag" 
+                        className="w-5 h-auto rounded-sm shadow-sm"
+                    />
+                    {/* CHANGE HERE: Display just the userLanguage code instead of full label */}
                     <span className="text-sm font-bold">{userLanguage}</span>
                     <ChevronDown className="h-3 w-3 text-white/70"/>
                 </button>
+                
                 {isLangMenuOpen && (
                     <div className="absolute top-full right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden animate-fade-in-up z-50 text-slate-800">
                         {LANGUAGES.map((lang) => (
-                            <button key={lang.code} onClick={() => { setUserLanguage(lang.code); setIsLangMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-blue-50 flex items-center gap-3 transition text-slate-700 border-b border-slate-50 last:border-0">
+                            <button
+                                key={lang.code}
+                                onClick={() => { setUserLanguage(lang.code); setIsLangMenuOpen(false); }}
+                                className="w-full text-left px-4 py-3 hover:bg-blue-50 flex items-center gap-3 transition text-slate-700 border-b border-slate-50 last:border-0"
+                            >
                                 <img src={lang.flagUrl} alt={lang.label} className="w-5 h-auto rounded-sm shadow-sm"/>
                                 <span className="text-sm font-medium">{lang.label}</span>
                             </button>
@@ -311,17 +549,26 @@ const App = () => {
                     </div>
                 )}
             </div>
-            {/* MONEDA */}
+
+            {/* Selector Moneda Custom */}
             <div className="relative" ref={currencyMenuRef}>
-                <button onClick={() => setIsCurrencyMenuOpen(!isCurrencyMenuOpen)} className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 transition text-white">
+                <button 
+                    onClick={() => setIsCurrencyMenuOpen(!isCurrencyMenuOpen)}
+                    className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-lg border border-white/20 cursor-pointer hover:bg-white/20 transition text-white"
+                >
                     <span className="text-sm font-bold text-teal-400">{CURRENCIES.find(c => c.code === userCurrency)?.symbol}</span>
                     <span className="text-sm font-bold">{userCurrency}</span>
                     <ChevronDown className="h-3 w-3 text-white/70"/>
                 </button>
+
                 {isCurrencyMenuOpen && (
                     <div className="absolute top-full right-0 mt-2 w-32 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden animate-fade-in-up z-50 text-slate-800">
                         {CURRENCIES.map((curr) => (
-                            <button key={curr.code} onClick={() => { setUserCurrency(curr.code); setIsCurrencyMenuOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-blue-50 flex items-center gap-3 transition text-slate-700 border-b border-slate-50 last:border-0">
+                            <button
+                                key={curr.code}
+                                onClick={() => { setUserCurrency(curr.code); setIsCurrencyMenuOpen(false); }}
+                                className="w-full text-left px-4 py-3 hover:bg-blue-50 flex items-center gap-3 transition text-slate-700 border-b border-slate-50 last:border-0"
+                            >
                                 <span className="text-sm font-bold text-blue-600 w-5 text-center">{curr.symbol}</span>
                                 <span className="text-sm font-medium">{curr.code}</span>
                             </button>
@@ -333,7 +580,6 @@ const App = () => {
 
         {bgImage && <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${bgImage}')` }} />}
         <div className="absolute inset-0 bg-gradient-to-b from-blue-900/60 via-blue-900/40 to-blue-900/90" />
-        
         <div className="relative container mx-auto px-4 pt-24 text-center">
           <nav className="flex justify-center items-center gap-3 mb-8 animate-fade-in-down">
             <Globe className="text-teal-400 h-10 w-10 drop-shadow-lg" /> 
@@ -354,7 +600,6 @@ const App = () => {
       {/* BUSCADOR */}
       <div className="container mx-auto px-4 -mt-40 relative z-10 mb-24">
         <div className="bg-white rounded-[2rem] shadow-2xl overflow-visible max-w-5xl mx-auto border border-slate-100">
-          {/* TABS */}
           <div className="flex bg-slate-50 p-2 border-b border-slate-200 gap-1 overflow-x-auto rounded-t-[2rem]">
             {['flights', 'hotels', 'cruises'].map(tab => (
                 <button key={tab} onClick={() => {setActiveTab(tab); setResults(null); setErrorMsg(null);}} className={`flex-1 min-w-[120px] py-4 flex items-center justify-center gap-2 font-bold rounded-xl transition-all duration-200 ${activeTab === tab ? 'bg-white shadow-md text-blue-600 ring-1 ring-slate-100' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'}`}>
@@ -364,7 +609,6 @@ const App = () => {
             ))}
           </div>
           
-          {/* FORMULARIO */}
           <form onSubmit={handleSearch} className="p-6 md:p-10 bg-white grid grid-cols-1 md:grid-cols-12 gap-6 items-end rounded-b-[2rem]">
             {activeTab === 'flights' && (
                 <div className="md:col-span-12 flex flex-wrap gap-6 mb-2">
@@ -374,7 +618,7 @@ const App = () => {
                 </div>
             )}
             
-            {/* INPUTS - ORIGEN */}
+            {/* ORIGEN CON AUTOCOMPLETADO */}
             {activeTab === 'flights' && (
                 <div className="md:col-span-3 relative suggestion-box">
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2 pl-1">{t('label_origin')}</label>
@@ -383,20 +627,15 @@ const App = () => {
                 </div>
             )}
 
-            {/* INPUTS - DESTINO */}
             <div className={`${activeTab === 'flights' ? 'md:col-span-3' : 'md:col-span-4'} relative suggestion-box`}>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2 pl-1">{t('label_destination')}</label>
                 <div className="relative group"><Globe className="absolute left-3.5 top-3.5 h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition" /><input type="text" placeholder={activeTab === 'hotels' ? "Paris" : "Tokyo"} className="w-full pl-11 p-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none font-medium transition" value={formData.destination} onChange={(e) => handleInputChange('destination', e.target.value)} onFocus={() => formData.destination.length > 1 && setShowSuggestions(prev => ({...prev, destination: true}))} /></div>
                 {activeTab === 'flights' && showSuggestions.destination && suggestions.destination.length > 0 && (<div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-xl mt-2 border border-slate-100 z-50 overflow-hidden max-h-60 overflow-y-auto">{suggestions.destination.map((airport, idx) => (<button key={idx} type="button" onClick={() => selectSuggestion('destination', airport)} className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-slate-50 last:border-0 transition"><span className="font-bold text-slate-800">{airport.city}</span> <span className="text-slate-400 text-sm">({airport.code})</span><div className="text-xs text-slate-400 font-medium uppercase mt-0.5">{airport.country}</div></button>))}</div>)}
             </div>
-            
-            {/* FECHAS */}
             <div className={`md:col-span-3 grid ${tripType === 'roundtrip' || activeTab !== 'flights' ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
                 <div><label className="block text-xs font-bold text-slate-500 uppercase mb-2 pl-1">{activeTab === 'hotels' ? t('label_checkin') : t('label_date_start')}</label><input type="date" className="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} /></div>
                 {(tripType === 'roundtrip' || activeTab !== 'flights') && (<div><label className="block text-xs font-bold text-slate-500 uppercase mb-2 pl-1">{activeTab === 'hotels' ? t('label_checkout') : t('label_date_end')}</label><input type="date" className="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600" value={formData.returnDate} onChange={(e) => setFormData({...formData, returnDate: e.target.value})} /></div>)}
             </div>
-
-            {/* PASAJEROS */}
             <div className="md:col-span-3 relative" ref={passengerMenuRef}>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2 pl-1">{activeTab === 'flights' ? t('label_passengers') : t('label_guests')}</label>
                 <button type="button" onClick={() => setIsPassengerMenuOpen(!isPassengerMenuOpen)} className="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-left font-medium text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition active:scale-[0.98]"><div className="flex items-center gap-2 truncate"><Users className="h-5 w-5 text-slate-400" /><span className="text-sm">{getTotalTravelers()}</span></div><ChevronDown className="h-4 w-4 text-slate-400" /></button>
@@ -419,22 +658,17 @@ const App = () => {
           <div className="container mx-auto px-4 pb-20 max-w-6xl text-center animate-fade-in-up"><div className="bg-red-50 border border-red-100 text-red-600 px-8 py-6 rounded-2xl inline-block shadow-sm max-w-lg"><p className="font-bold text-lg mb-2 flex items-center justify-center gap-2"><AlertTriangle className="h-5 w-5"/> {t('error_no_results')}</p><p className="text-sm opacity-90">{errorMsg}</p></div></div>
       )}
 
-      {/* RESULTADOS */}
       {results && !errorMsg && (
         <div className="container mx-auto px-4 py-8 max-w-6xl flex-grow animate-fade-in-up">
             <h2 className="text-3xl font-bold mb-8 text-slate-800">{t('result_title')} {formData.destination}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {results.map((item, idx) => {
                 const converted = convertPrice(item.price, item.currency);
-                const myPriceInUserCurr = item.price * (EXCHANGE_RATES[item.currency] || 1) * (1 / (EXCHANGE_RATES[userCurrency] || 1));
-                const saving = maxPrice > 0 && myPriceInUserCurr < maxPrice ? Math.round(maxPrice - myPriceInUserCurr) : 0;
-                
                 return (
                   <div key={idx} className={`bg-white rounded-2xl p-6 border shadow-sm relative hover:shadow-xl transition duration-300 group ${idx === 0 ? 'border-teal-400 ring-1 ring-teal-50 shadow-md' : 'border-slate-100'}`}>
-                    {idx === 0 && saving > 0 && <div className="absolute -top-3 left-6 bg-red-500 text-white text-[11px] font-extrabold uppercase px-3 py-1 rounded-full shadow-md z-10 animate-pulse">{t('save_badge')} {saving.toLocaleString()} {userCurrency}</div>}
+                    {idx === 0 && <div className="absolute -top-3 left-6 bg-teal-500 text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full shadow-md z-10">{t('result_best_option')}</div>}
                     <div className="flex justify-between items-start mb-4 mt-2">
                         <div className="flex items-center gap-3"><span className="text-4xl drop-shadow-sm">{item.flag}</span><div><h3 className="font-bold text-slate-800 text-lg leading-tight">{t('result_vpn')} {item.country}</h3><div className="text-xs text-slate-400 font-medium flex items-center gap-1"><Lock className="w-3 h-3"/> {t('result_pay_here')}</div></div></div>
-                        <button className="p-2 hover:bg-green-50 rounded-full transition text-green-600" onClick={() => shareDeal(item)} title={t('share_whatsapp')}><Share2 className="w-5 h-5"/></button>
                     </div>
                     {activeTab === 'hotels' && (
                         <div className="h-48 bg-slate-100 rounded-xl mb-4 overflow-hidden relative group-hover:shadow-inner transition">
@@ -464,7 +698,6 @@ const App = () => {
         </div>
       )}
 
-      {/* LANDING */}
       {!results && !errorMsg && (
         <div className="bg-white py-20 flex-grow">
             <div className="container mx-auto px-4 max-w-6xl">
@@ -475,21 +708,10 @@ const App = () => {
                     <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl hover:shadow-2xl transition duration-300 text-center group relative top-0 md:-top-6"><div className="w-20 h-20 mx-auto bg-teal-500 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-teal-200 group-hover:scale-110 transition-transform"><Shield className="h-10 w-10" /></div><h3 className="text-xl font-bold mb-3 text-slate-800">{t('step_2_title')}</h3><p className="text-slate-500 leading-relaxed">{t('step_2_desc')}</p></div>
                     <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl hover:shadow-2xl transition duration-300 text-center group"><div className="w-20 h-20 mx-auto bg-purple-600 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-purple-200 group-hover:scale-110 transition-transform"><CreditCard className="h-10 w-10" /></div><h3 className="text-xl font-bold mb-3 text-slate-800">{t('step_3_title')}</h3><p className="text-slate-500 leading-relaxed">{t('step_3_desc')}</p></div>
                 </div>
-                <div className="mt-24 bg-slate-900 rounded-[2rem] p-10 md:p-16 text-center text-white relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div><div className="relative z-10"><h3 className="text-2xl md:text-3xl font-bold mb-6">{t('trust_title')}</h3><div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto text-left"><div className="flex gap-4"><CheckCircle className="h-8 w-8 text-teal-400 flex-shrink-0" /><div><h4 className="font-bold text-lg mb-1">Legal</h4><p className="text-slate-400 text-sm">{t('trust_desc_1')}</p></div></div><div className="flex gap-4"><CheckCircle className="h-8 w-8 text-teal-400 flex-shrink-0" /><div><h4 className="font-bold text-lg mb-1">Seguro</h4><p className="text-slate-400 text-sm">{t('trust_desc_2')}</p></div></div></div></div></div>
             </div>
         </div>
       )}
       
-      {/* NEWSLETTER */}
-      <div className="bg-slate-50 border-t border-slate-200 py-16 mt-auto">
-        <div className="container mx-auto px-4 text-center">
-            <h3 className="text-2xl font-bold text-slate-800 mb-4">{t('newsletter_title')}</h3>
-            <p className="text-slate-500 mb-6 max-w-lg mx-auto">{t('newsletter_desc')}</p>
-            <div className="flex max-w-md mx-auto gap-2"><input type="email" placeholder="Email..." className="flex-1 p-4 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"/><button className="bg-slate-900 text-white font-bold px-6 rounded-xl hover:bg-slate-800 transition">{t('newsletter_btn')}</button></div>
-        </div>
-      </div>
-
-      {/* MODAL TUTORIAL */}
       {showTutorial && selectedDeal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl w-full max-w-2xl p-0 overflow-hidden shadow-2xl animate-scale-up max-h-[95vh] overflow-y-auto">
@@ -515,8 +737,8 @@ const App = () => {
         </div>
       )}
 
-      <footer className="bg-slate-900 text-slate-400 py-8 text-center text-sm mt-auto">
-          <div className="container mx-auto px-4">
+      <footer className="bg-slate-900 text-slate-400 py-10 mt-auto">
+          <div className="container mx-auto px-4 text-center">
               <Globe className="h-8 w-8 text-teal-400 mx-auto mb-4" />
               <p className="mb-2 font-bold text-white">TRAVPN © 2024</p>
               <p className="text-sm opacity-70">{t('footer_text')}</p>
