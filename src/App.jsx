@@ -322,54 +322,18 @@ const AIRPORTS = [
   {city:"Palma de Mallorca",code:"PMI",country:"España"},{city:"Málaga Costa del Sol",code:"AGP",country:"España"},
   {city:"Alicante Elche",code:"ALC",country:"España"},{city:"Gran Canaria",code:"LPA",country:"España"},
   {city:"Tenerife Sur",code:"TFS",country:"España"},{city:"Tenerife Norte",code:"TFN",country:"España"},
-  {city:"Valencia",code:"VLC",country:"España"},{city:"Ibiza",code:"IBZ",country:"España"},
-  {city:"Sevilla",code:"SVQ",country:"España"},{city:"Lanzarote",code:"ACE",country:"España"},
-  {city:"Bilbao",code:"BIO",country:"España"},{city:"Fuerteventura",code:"FUE",country:"España"},
-  {city:"Menorca",code:"MAH",country:"España"},{city:"Santiago de Compostela",code:"SCQ",country:"España"},
-  {city:"Asturias",code:"OVD",country:"España"},{city:"La Palma",code:"SPC",country:"España"},
-  {city:"Murcia Corvera",code:"RMU",country:"España"},{city:"A Coruña",code:"LCG",country:"España"},
-  {city:"Vigo",code:"VGO",country:"España"},{city:"Jerez",code:"XRY",country:"España"},
-  {city:"Granada Jaén",code:"GRX",country:"España"},{city:"Santander",code:"SDR",country:"España"},
-  {city:"Reus",code:"REU",country:"España"},{city:"Almería",code:"LEI",country:"España"},
-  {city:"Girona",code:"GRO",country:"España"},{city:"Pamplona",code:"PNA",country:"España"},
-  {city:"Zaragoza",code:"ZAZ",country:"España"},{city:"Valladolid",code:"VLL",country:"España"},
-  {city:"San Sebastián",code:"EAS",country:"España"},{city:"Melilla",code:"MLN",country:"España"},
-  {city:"El Hierro",code:"VDE",country:"España"},{city:"La Gomera",code:"GMZ",country:"España"},
-  {city:"Badajoz",code:"BJZ",country:"España"},{city:"León",code:"LEN",country:"España"},
-  {city:"Salamanca",code:"SLM",country:"España"},{city:"Logroño",code:"RJL",country:"España"},
-  {city:"Castellón",code:"CDT",country:"España"},{city:"Vitoria",code:"VIT",country:"España"},
-  {city:"Lleida",code:"ILD",country:"España"},
-  // EUROPA
-  {city:"Londres Heathrow",code:"LHR",country:"Reino Unido"},{city:"Londres Gatwick",code:"LGW",country:"Reino Unido"},
-  {city:"París CDG",code:"CDG",country:"Francia"},{city:"París Orly",code:"ORY",country:"Francia"},
+  {city:"Valencia",code:"VLC",country:"España"},{city:"Bilbao",code:"BIO",country:"España"},
+  {city:"Sevilla",code:"SVQ",country:"España"},{city:"Londres Heathrow",code:"LHR",country:"Reino Unido"},
+  {city:"Londres Gatwick",code:"LGW",country:"Reino Unido"},{city:"París CDG",code:"CDG",country:"Francia"},
+  {city:"París Orly",code:"ORY",country:"Francia"},{city:"Roma Fiumicino",code:"FCO",country:"Italia"},
   {city:"Ámsterdam",code:"AMS",country:"Países Bajos"},{city:"Frankfurt",code:"FRA",country:"Alemania"},
-  {city:"Múnich",code:"MUC",country:"Alemania"},{city:"Berlín",code:"BER",country:"Alemania"},
-  {city:"Roma Fiumicino",code:"FCO",country:"Italia"},{city:"Milán Malpensa",code:"MXP",country:"Italia"},
-  {city:"Lisboa",code:"LIS",country:"Portugal"},{city:"Oporto",code:"OPO",country:"Portugal"},
-  {city:"Dublín",code:"DUB",country:"Irlanda"},{city:"Zúrich",code:"ZRH",country:"Suiza"},
-  {city:"Bruselas",code:"BRU",country:"Bélgica"},{city:"Viena",code:"VIE",country:"Austria"},
-  {city:"Copenhague",code:"CPH",country:"Dinamarca"},{city:"Estocolmo",code:"ARN",country:"Suecia"},
-  {city:"Oslo",code:"OSL",country:"Noruega"},{city:"Atenas",code:"ATH",country:"Grecia"},
-  {city:"Praga",code:"PRG",country:"Rep. Checa"},{city:"Budapest",code:"BUD",country:"Hungría"},
-  {city:"Varsovia",code:"WAW",country:"Polonia"},{city:"Estambul",code:"IST",country:"Turquía"},
-  // AMÉRICA
-  {city:"Nueva York JFK",code:"JFK",country:"EE.UU."},{city:"Nueva York Newark",code:"EWR",country:"EE.UU."},
-  {city:"Los Ángeles",code:"LAX",country:"EE.UU."},{city:"Miami",code:"MIA",country:"EE.UU."},
-  {city:"Orlando",code:"MCO",country:"EE.UU."},{city:"San Francisco",code:"SFO",country:"EE.UU."},
-  {city:"Chicago",code:"ORD",country:"EE.UU."},{city:"Toronto",code:"YYZ",country:"Canadá"},
-  {city:"Ciudad de México",code:"MEX",country:"México"},{city:"Cancún",code:"CUN",country:"México"},
-  {city:"Bogotá",code:"BOG",country:"Colombia"},{city:"Medellín",code:"MDE",country:"Colombia"},
-  {city:"Buenos Aires",code:"EZE",country:"Argentina"},{city:"São Paulo",code:"GRU",country:"Brasil"},
-  {city:"Río de Janeiro",code:"GIG",country:"Brasil"},{city:"Santiago",code:"SCL",country:"Chile"},
-  {city:"Lima",code:"LIM",country:"Perú"},{city:"Panamá",code:"PTY",country:"Panamá"},
-  // ASIA & OTROS
-  {city:"Tokio Haneda",code:"HND",country:"Japón"},{city:"Tokio Narita",code:"NRT",country:"Japón"},
-  {city:"Bangkok",code:"BKK",country:"Tailandia"},{city:"Phuket",code:"HKT",country:"Tailandia"},
-  {city:"Singapur",code:"SIN",country:"Singapur"},{city:"Hong Kong",code:"HKG",country:"Hong Kong"},
-  {city:"Seúl",code:"ICN",country:"Corea del Sur"},{city:"Bali",code:"DPS",country:"Indonesia"},
-  {city:"Dubái",code:"DXB",country:"EAU"},{city:"Doha",code:"DOH",country:"Catar"},
-  {city:"Sídney",code:"SYD",country:"Australia"},{city:"Melbourne",code:"MEL",country:"Australia"},
-  {city:"El Cairo",code:"CAI",country:"Egipto"},{city:"Marrakech",code:"RAK",country:"Marruecos"}
+  {city:"Lisboa",code:"LIS",country:"Portugal"},{city:"Nueva York JFK",code:"JFK",country:"EE.UU."},
+  {city:"Los Ángeles",code:"LAX",country:"EE.UU."}, {city:"Miami",code:"MIA",country:"EE.UU."},
+  {city:"Tokio Haneda",code:"HND",country:"Japón"},{city:"Bangkok",code:"BKK",country:"Tailandia"},
+  {city:"Cancún",code:"CUN",country:"México"},{city:"Buenos Aires",code:"EZE",country:"Argentina"},
+  {city:"Estambul",code:"IST",country:"Turquía"}, {city:"Dubái",code:"DXB",country:"EAU"},
+  {city:"Praga",code:"PRG",country:"Rep. Checa"}, {city:"Bombay",code:"BOM",country:"India"},
+  {city:"Kuala Lumpur",code:"KUL",country:"Malasia"}
 ];
 
 const BACKGROUND_IMAGES = [
@@ -541,17 +505,8 @@ const App = () => {
       }
     } catch (error) {
       console.error(error);
-      // --- FALLBACK DEMO CON LOS NUEVOS PAÍSES ---
-      const dest = formData.destination;
-      const demoData = [
-        { country: 'Rep. Checa', flag: 'CZ', price: 4200, currency: 'CZK', airline: 'Smartwings', hotelName: `Hotel ${dest} Prague`, stars: 4, image: `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500`, type: activeTab === 'hotels' ? 'hotel' : 'flight' },
-        { country: 'India', flag: 'IN', price: 65000, currency: 'INR', airline: 'Air India', hotelName: `${dest} Palace`, stars: 5, image: `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500`, type: activeTab === 'hotels' ? 'hotel' : 'flight' },
-        { country: 'México', flag: 'MX', price: 15500, currency: 'MXN', airline: 'Aeroméxico', hotelName: `Gran Hotel ${dest}`, stars: 4, image: `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500`, type: activeTab === 'hotels' ? 'hotel' : 'flight' },
-        { country: 'España', flag: 'ES', price: 450, currency: 'EUR', airline: 'Iberia', hotelName: `${dest} Centro`, stars: 3, image: `https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500`, type: activeTab === 'hotels' ? 'hotel' : 'flight' },
-        { country: 'Malasia', flag: 'MY', price: 1800, currency: 'MYR', airline: 'Malaysia Airlines', hotelName: `${dest} Towers`, stars: 5, image: `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500`, type: activeTab === 'hotels' ? 'hotel' : 'flight' },
-      ];
-      setTimeout(() => { setResults(demoData); setLoading(false); }, 1500);
-      return;
+      // SI FALLA, MUESTRA ERROR REAL. NADA DE DEMOS.
+      setErrorMsg(t('error_server'));
     } finally { setLoading(false); }
   };
 
